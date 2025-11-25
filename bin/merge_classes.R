@@ -71,7 +71,7 @@ source(file.path(Sys.getenv("WORKFLOW_DIR"), "bin", "auxfuns.R"))
       classes$consensus[j] <- sequences_to_align
       classes$mean_edit_score[j] = 0
     } else {
-      a <- capture.output({alignment_matrix = msa(sequences_to_align, method = "ClustalOmega", type = "dna")})
+      a <- capture.output({alignment_matrix = msa::msa(sequences_to_align, method = "ClustalOmega", type = "dna")})
       classes$consensus[j] <- consensus_N(alignment_matrix, class_name_nchar)
       classes$mean_edit_score[j] = mean(adist(classes$consensus[j], sequences_to_align))
     }
