@@ -31,7 +31,7 @@ suppressMessages({
   library(Biostrings)
   library(GenomicRanges)
   library(scales)
-  library(BCT)
+  # library(BCT)
 })
 
 # Load additional functions

@@ -340,7 +340,7 @@ See README.md for full details: https://github.com/vlothec/CAP
     def trash2_dir = params.TRASH2 ?: params.trash2
     if (trash2_dir) {
         trash_out = assembly_ch.map { assembly ->
-            def base = assembly.baseName
+            def base = assembly.name
             def dir = file(trash2_dir)
             def repeats = file("${dir}/${base}_repeats_with_seq.csv")
             def arrays  = file("${dir}/${base}_arrays.csv")
