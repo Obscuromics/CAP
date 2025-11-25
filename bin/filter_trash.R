@@ -17,12 +17,14 @@ output_arrays_filtered <- args[4]
 # Load data
 repeats_data <- read.csv(repeats_with_seq_csv)
 arrays_data <- read.csv(arrays_csv)
+str(repeats_data)
+str(arrays_data)
 
 # debug, TODO: remove
-write.csv(repeats_data, file = output_repeats_filtered, row.names = FALSE)
-write.csv(arrays_data, file = output_arrays_filtered, row.names = FALSE)
-message("Debug stop: remove before running the full script")
-quit(save = "no")
+# write.csv(repeats_data, file = output_repeats_filtered, row.names = FALSE)
+# write.csv(arrays_data, file = output_arrays_filtered, row.names = FALSE)
+# message("Debug stop: remove before running the full script")
+# quit(save = "no")
 
 # Load libraries
 suppressMessages({library(seqinr)})
