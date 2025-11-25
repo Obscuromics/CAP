@@ -5,14 +5,13 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  # Core R and R packages
-  - r-base=4.5.1
+  # Core R and R packages (use 4.3.1 for better Bioconductor compatibility)
+  - r-base=4.3.1
   - r-tidyverse
   - r-optparse
   - r-ggplot2
   - r-data.table
   - r-seqinr
-  - r-msa
   - r-stringr
   - r-stringdist
   - r-scales
@@ -21,10 +20,11 @@ dependencies:
   - r-getopt
   - r-yaml
   - r-renv
+  - r-devtools
+  - r-rcpp
   - bioconductor-biostrings
   - bioconductor-genomicranges
   - bioconductor-iranges
-  - bioconductor-bct
   
   # Python and data science
   - python=3.11
@@ -43,13 +43,8 @@ dependencies:
   - nextflow
 
   # Build and compilation tools for R packages
-  - r-devtools
-  - r-rcpp
   - cmake
   - make
-  - libcurl-devel
-  - gcc
   
   # Additional utilities
   - glpk
-  - icu
