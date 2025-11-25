@@ -53,14 +53,11 @@ for (j in seq_along(chromosomes)) {
     
     overlaps <- as.data.frame(findOverlaps(gr1, gr2))
     
-    pb <- txtProgressBar(min = 0, max = nrow(overlaps), style = 3)
     for(k in seq_len(nrow(overlaps))) {
       overlap_bp = width(pintersect(gr1[overlaps$queryHits[k]], gr2[overlaps$subjectHits[k]]))
       sequence_arrays$overlapping_bp[overlaps$queryHits[k]] = sequence_arrays$overlapping_bp[overlaps$queryHits[k]] + overlap_bp
       sequence_tes$overlapping_bp[overlaps$subjectHits[k]] = sequence_tes$overlapping_bp[overlaps$subjectHits[k]] + overlap_bp
-      setTxtProgressBar(pb, k)
     }
-    close(pb)
     sequence_arrays$width = sequence_arrays$end - sequence_arrays$start + 1
     sequence_tes$width = sequence_tes$end - sequence_tes$start + 1
     sequence_tes$overlapping_percentage = sequence_tes$overlapping_bp / sequence_tes$width
