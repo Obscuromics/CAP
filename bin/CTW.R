@@ -13,8 +13,7 @@ assembly_fasta <- args[1]
 output_ctw <- args[2]
 
 # Load libraries
-suppressMessages({library(Biostrings)
-                  library(BCT)})
+suppressMessages({library(Biostrings)})
 
 # Load additional functions
 source(file.path(Sys.getenv("WORKFLOW_DIR"), "bin", "auxfuns.R"))
