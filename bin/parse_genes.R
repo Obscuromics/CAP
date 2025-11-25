@@ -14,8 +14,7 @@ metadata_csv <- args[2]
 output_genes_parsed <- args[3]
 
 # Load libraries
-suppressMessages({library(seqinr)
-                  library(msa)})
+suppressMessages({library(seqinr)})
 
 # Load additional functions
 source(file.path(Sys.getenv("WORKFLOW_DIR"), "bin", "auxfuns.R"))

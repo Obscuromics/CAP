@@ -20,8 +20,7 @@ repeats_data <- read.csv(repeats_filtered_csv)
 arrays_data <- read.csv(arrays_filtered_csv)
 
 # Load libraries
-suppressMessages({library(seqinr)
-                  library(msa)})
+suppressMessages({library(seqinr)})
 
 # Load additional functions
 source(file.path(Sys.getenv("WORKFLOW_DIR"), "bin", "auxfuns.R"))

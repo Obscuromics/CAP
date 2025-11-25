@@ -25,8 +25,7 @@ message("Debug stop: remove before running the full script")
 quit(save = "no")
 
 # Load libraries
-suppressMessages({library(seqinr)
-                  library(msa)})
+suppressMessages({library(seqinr)})
 
 # Load additional functions
 source(file.path(Sys.getenv("WORKFLOW_DIR"), "bin", "auxfuns.R"))

@@ -16,7 +16,6 @@ output_genes_filtered <- args[4]
 
 # Load libraries
 suppressMessages({library(seqinr)
-                  library(msa)
                   library(GenomicRanges)
                   library(IRanges)})
 
