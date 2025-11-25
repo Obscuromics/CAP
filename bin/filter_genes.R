@@ -30,6 +30,10 @@ genes_data <- read.csv(genes_parsed_csv)
 arrays_filtered <- read.csv(arrays_filtered_csv)
 metadata <- read.csv(metadata_file_csv)
 
+str(genes_data)
+str(arrays_filtered)
+str(metadata)
+
 chromosomes <- metadata$chromosome.name
 chromosomes_lengths <- metadata$size
 

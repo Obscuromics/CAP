@@ -28,8 +28,11 @@ tes_overlap_max_perc = 0.8
 # Load data 
 tes_data <- read.csv(tes_parsed_csv)
 arrays_filtered <- read.csv(arrays_filtered_csv)
-
 metadata <- read.csv(metadata_file_csv)
+
+str(tes_data)
+str(arrays_filtered)
+str(metadata)
 
 chromosomes <- metadata$chromosome.name
 chromosomes_lengths <- metadata$size

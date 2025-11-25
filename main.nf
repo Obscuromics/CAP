@@ -81,6 +81,7 @@ process GET_METADATA {
 
 // ────────────────────── FILTER TRASH ──────────────────────
 process FILTER_TRASH {
+    publishDir "${params.outdir}", mode: 'copy'
     input:
     tuple path(repeats), path(arrays)
     output:
