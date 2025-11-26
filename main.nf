@@ -252,7 +252,6 @@ process CAP {
 	
     output:
     path "${assembly.baseName}_CAP_plot_*.png"
-    path "${assembly.baseName}_CAP_dotplot.png"
     path "${assembly.baseName}_CAP_repeat_families.csv"
     path "${assembly.baseName}_CAP_model.txt"
 	

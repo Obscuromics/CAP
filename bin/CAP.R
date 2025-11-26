@@ -155,7 +155,7 @@ edta_classes_colours <-  c(
 # ------------------------------------------------------------------ #
 #  CHROMOSOME FILTERING (top 30 longest)
 # ------------------------------------------------------------------ #
-message("Removed from plotting chromosomes shorter than 200 kbp: ", chr_info$chromosome.name[chr_info$size < 200000])
+print(paste0("Removed from plotting chromosomes shorter than 200 kbp: ", chr_info$chromosome.name[chr_info$size < 200000]))
 chr_info <- chr_info[chr_info$size > 200000,] # TODO: remove this, user should provide fasta with only relevant chromosomes or add parameter
 chromosomes     <- chr_info$chromosome.name
 chromosomes_len <- chr_info$size
@@ -435,7 +435,7 @@ for(k in 1 : length(chromosomes_sets)) {
   }
   
   dev.off()
-  message("DONE: ", plot_name)
+  print(paste0("DONE: ", plot_name))
   
   
   
