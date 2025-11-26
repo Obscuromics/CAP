@@ -16,7 +16,6 @@ output_genes_filtered <- args[4]
 
 # Load libraries
 suppressMessages({library(seqinr)
-                  library(msa)
                   library(GenomicRanges)
                   library(IRanges)})
 
@@ -30,6 +29,10 @@ genes_overlap_max_perc <- 0.8
 genes_data <- read.csv(genes_parsed_csv)
 arrays_filtered <- read.csv(arrays_filtered_csv)
 metadata <- read.csv(metadata_file_csv)
+
+str(genes_data)
+str(arrays_filtered)
+str(metadata)
 
 chromosomes <- metadata$chromosome.name
 chromosomes_lengths <- metadata$size

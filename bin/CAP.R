@@ -31,7 +31,7 @@ suppressMessages({
   library(Biostrings)
   library(GenomicRanges)
   library(scales)
-  library(BCT)
+  # library(BCT)
 })
 
 # Load additional functions
@@ -303,6 +303,8 @@ for(k in 1 : length(chromosomes_sets)) {
     chr <- chromosomes[j]
     len <- chromosomes_len[j]
     rep_chr <- subset(repeats, seqID == chr)
+    rep_chr<- rep_chr[rep_chr$start >= 1,]
+    rep_chr<- rep_chr[rep_chr$start <= len,]
     edt_chr <- if (!no_edta) subset(edta, seqID == chr) else data.frame()
     gen_chr <- if (!no_heli) subset(genes, seqID == chr) else data.frame()
     
@@ -362,6 +364,8 @@ for(k in 1 : length(chromosomes_sets)) {
       for (m in seq_len(length(classes_to_plot))) {
         fam <- subset(rep_chr, new_class == classes_to_plot[m])
         if (!nrow(fam)) next
+        fam <- fam[fam$start > 0,]
+        fam <- fam[fam$end <= len,]
         cov <- calculate.repeats.percentage.in.windows(win_rep, fam$start, fam$width, len)
         cov[cov == 0] <- NA; cov[cov > 100] <- 100
         lines(win_rep, cov, col = palette[m], pch=16, type="o", lwd = 2, cex = cex_factor * 1)
@@ -373,6 +377,8 @@ for(k in 1 : length(chromosomes_sets)) {
     
     # === PLOT B: EDTA + TE/repeat peak + genes + HiC ===
     win_edta <- genomic.bins.starts(1, len, bin.size = bin_edta)
+    edt_chr <- edt_chr[edt_chr$start > 0,]
+    edt_chr <- edt_chr[edt_chr$end <= len,]
     edt_cov <- if (!no_edta && nrow(edt_chr)) {
       calculate.repeats.percentage.in.windows(win_edta, edt_chr$start, edt_chr$width, len)
     } else rep(0, length(win_edta))
@@ -385,6 +391,8 @@ for(k in 1 : length(chromosomes_sets)) {
     if (!no_edta && nrow(edt_chr)) {
       for (m in rev(seq_along(edta_classes))) {
         cls <- edt_chr[edt_chr$type %in% edta_classes[[m]], ]
+        cls <- cls[cls$start > 0,]
+        cls <- cls[cls$end <= len,]
         if (!nrow(cls)) next
         cov <- calculate.repeats.percentage.in.windows(win_edta, cls$end, cls$width, len)
         cov[cov == 0] <- NA; cov[cov > 100] <- 100
@@ -435,7 +443,7 @@ for(k in 1 : length(chromosomes_sets)) {
   }
   
   dev.off()
-  message("DONE: ", plot_name)
+  print(paste0("DONE: ", plot_name))
   
   
   

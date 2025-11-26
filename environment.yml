@@ -4,17 +4,49 @@ channels:
   - conda-forge
   - bioconda
   - defaults
+  - anaconda
 dependencies:
-  - r-base=4.3
+  # Core R and R packages
+  - r-base=4.4.3
   - r-tidyverse
   - r-optparse
   - r-ggplot2
   - r-data.table
+  - r-seqinr
+  - r-stringr
+  - r-stringdist
+  - r-scales
+  - r-ape
+  - r-doparallel
+  - r-getopt
+  - r-yaml
+  - r-renv
+  - r-devtools
+  - r-rcpp
+  - bioconductor-biostrings
+  - bioconductor-genomicranges
+  - bioconductor-iranges
+  - bioconductor-msa
+  
+  # Python and data science
   - python=3.11
   - pandas
+  - numpy
   - joblib
   - xgboost
   - scikit-learn
+  
+  # Bioinformatics tools
   - mafft
   - hmmer
+  
+  # Version control and workflow
   - git
+  - nextflow
+
+  # Build and compilation tools for R packages
+  - cmake
+  - make
+  
+  # Additional utilities
+  - glpk

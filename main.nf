@@ -81,6 +81,7 @@ process GET_METADATA {
 
 // ────────────────────── FILTER TRASH ──────────────────────
 process FILTER_TRASH {
+    publishDir "${params.outdir}", mode: 'copy'
     input:
     tuple path(repeats), path(arrays)
     output:
@@ -251,7 +252,6 @@ process CAP {
 	
     output:
     path "${assembly.baseName}_CAP_plot_*.png"
-    path "${assembly.baseName}_CAP_dotplot.png"
     path "${assembly.baseName}_CAP_repeat_families.csv"
     path "${assembly.baseName}_CAP_model.txt"
 	
@@ -340,7 +340,7 @@ See README.md for full details: https://github.com/vlothec/CAP
     def trash2_dir = params.TRASH2 ?: params.trash2
     if (trash2_dir) {
         trash_out = assembly_ch.map { assembly ->
-            def base = assembly.baseName
+            def base = assembly.name
             def dir = file(trash2_dir)
             def repeats = file("${dir}/${base}_repeats_with_seq.csv")
             def arrays  = file("${dir}/${base}_arrays.csv")

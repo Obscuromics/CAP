@@ -23,8 +23,7 @@ if (!file.exists(te_gff)) {
 }
 
 # Load libraries
-suppressMessages({library(seqinr)
-                  library(msa)})
+suppressMessages({library(seqinr)})
 
 # Load additional functions
 source(file.path(Sys.getenv("WORKFLOW_DIR"), "bin", "auxfuns.R"))
