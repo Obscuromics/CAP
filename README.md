@@ -1,105 +1,3 @@
-# CAP
-
-1. /modules/TRASH_2/src/TRASH.R
-Inputs:
-	Required: *assembly.fasta* <- external input
-	Optional: *templates.fasta* <- external input
-optional TRASH2 arguments:
-	-p --cores_no           number of cores for parallel run, default: 1
-	-m --max_rep_size       maximum repeat size, default: 1000
-	-i --min_rep_size       minimum repeat size, default: 7
-	-t --templates          fasta file with repeat templates and their names 
-First run: modules/TRASH_2/src/TRASH.R -o [output directory] -f [fasta input directory] [other optional arguments and optional input template]
-Output: *[fasta_file]_repeats_with_seq.csv* *_arrays.csv*
-
-2. /bin/filter_trash.R
-Inputs: 
-	Required: *[fasta_file]_repeats_with_seq.csv*, *_arrays.csv*
-Output: *[fasta_file]_repeats_filtered.csv* *[fasta_file]_arrays_filtered.csv* 
-
-3. /bin/merge_classes.R
-Inputs: 
-	Required: *[fasta_file]_repeats_filtered.csv*, *_arrays_filtered.csv*
-Output: *[fasta_file]_repeats_filtered_reclassed.csv*, *_arrays_filtered_reclassed.csv*, *[fasta_file]_genome_classes.csv*
-
-4. /bin/parse_TEs.R optional module
-Inputs: 
-	Required: *[fasta_file]_EDTA.TEanno.split.gff3* <- external input
-Output: *[fasta_file]_TEs_parsed.csv*
-
-5. /bin/filter_TEs.R optional module, run if 4 complete
-Inputs: 
-	Required: *[fasta_file]_TEs_parsed.csv*
-Output: *[fasta_file]_TEs_filtered.csv*
-
-6. /bin/parse_genes.R optional module
-Inputs: 
-	Required: *[fasta_file]_helixer.gff* <- external input
-Output: *[fasta_file]_genes_parsed.csv*
-
-7. /bin/filter_genes.R optional module, run if 6 complete
-Inputs: 
-	Required: *[fasta_file]_genes_parsed.csv*
-Output: *[fasta_file]_genes_filtered.csv*
-
-8. /bin/score_centromeric_classes.R 
-Inputs: 
-	Required: *[fasta_file]_repeats_filtered_reclassed.csv*, 
-			  *_arrays_filtered_reclassed.csv*, 
-			  *[fasta_file]_genome_classes.csv*
-	Optional: *[fasta_file]_TEs_filtered.csv*, 
-			  *[fasta_file]_genes_filtered.csv*
-Output: *[fasta_file]_centromeric_scores.csv*
-
-9. /bin/predict_centromeric.py
-Inputs: 
-	Required: *[fasta_file]_centromeric_scores.csv*, *[fasta_file]_metadata.csv*
-	Additional model input: /model/centromeric_model_v2.pkl <- provided in the repository 
-Output: *[fasta_file]_predictions.csv*
-
-10. /bin/GC.R
-Inputs: 
-	Required: *assembly.fasta*
-Output: *[fasta_file]_GC.csv*
-
-11. /bin/CTW.R
-Inputs: 
-	Required: *assembly.fasta*
-Output: *[fasta_file]_CTW.csv*
-
-12. /bin/CAP.R 
-Inputs:
-	Required: *[fasta_file]_predictions.csv*, 
-			  *[fasta_file]_repeats_filtered_reclassed.csv*, 
-			  *[fasta_file]_arrays_filtered_reclassed.csv*, 
-			  *[fasta_file]_genome_classes.csv*,
-			  *[fasta_file]_metadata.csv*
-	Optional: *[fasta_file]_TEs_filtered.csv*, 
-			  *[fasta_file]_genes_filtered.csv*
-Output: *[fasta_file]_CAP_plot.png*, 
-		*[fasta_file]_CAP_repeat_families.csv*, 
-		*[fasta_file]_CAP_dotplot.png*, 
-		*[fasta_file]_CAP_model.txt*
-		
-		
-11. /bin/get_metadata.R
-Inputs:
-	Required: *assembly.fasta*
-Output: *[fasta_file]_metadata.csv*
-
-
-
-sudo apt update && sudo apt install -y \
-    build-essential \
-    gfortran \
-    libblas-dev liblapack-dev \
-    zlib1g-dev \
-	libicu-dev
-
-
-R installation:
-install.packages("renv")
-install.packages("yaml")
 
 # CAP: Centromere Analysis Pipeline
 
@@ -247,4 +145,90 @@ If you use CAP, please cite:
 ## Contact
 
 ---
+
+
+# CAP
+
+1. /modules/TRASH_2/src/TRASH.R
+Inputs:
+	Required: *assembly.fasta* <- external input
+	Optional: *templates.fasta* <- external input
+optional TRASH2 arguments:
+	-p --cores_no           number of cores for parallel run, default: 1
+	-m --max_rep_size       maximum repeat size, default: 1000
+	-i --min_rep_size       minimum repeat size, default: 7
+	-t --templates          fasta file with repeat templates and their names 
+First run: modules/TRASH_2/src/TRASH.R -o [output directory] -f [fasta input directory] [other optional arguments and optional input template]
+Output: *[fasta_file]_repeats_with_seq.csv* *_arrays.csv*
+
+2. /bin/filter_trash.R
+Inputs: 
+	Required: *[fasta_file]_repeats_with_seq.csv*, *_arrays.csv*
+Output: *[fasta_file]_repeats_filtered.csv* *[fasta_file]_arrays_filtered.csv* 
+
+3. /bin/merge_classes.R
+Inputs: 
+	Required: *[fasta_file]_repeats_filtered.csv*, *_arrays_filtered.csv*
+Output: *[fasta_file]_repeats_filtered_reclassed.csv*, *_arrays_filtered_reclassed.csv*, *[fasta_file]_genome_classes.csv*
+
+4. /bin/parse_TEs.R optional module
+Inputs: 
+	Required: *[fasta_file]_EDTA.TEanno.split.gff3* <- external input
+Output: *[fasta_file]_TEs_parsed.csv*
+
+5. /bin/filter_TEs.R optional module, run if 4 complete
+Inputs: 
+	Required: *[fasta_file]_TEs_parsed.csv*
+Output: *[fasta_file]_TEs_filtered.csv*
+
+6. /bin/parse_genes.R optional module
+Inputs: 
+	Required: *[fasta_file]_helixer.gff* <- external input
+Output: *[fasta_file]_genes_parsed.csv*
+
+7. /bin/filter_genes.R optional module, run if 6 complete
+Inputs: 
+	Required: *[fasta_file]_genes_parsed.csv*
+Output: *[fasta_file]_genes_filtered.csv*
+
+8. /bin/score_centromeric_classes.R 
+Inputs: 
+	Required: *[fasta_file]_repeats_filtered_reclassed.csv*, 
+			  *_arrays_filtered_reclassed.csv*, 
+			  *[fasta_file]_genome_classes.csv*
+	Optional: *[fasta_file]_TEs_filtered.csv*, 
+			  *[fasta_file]_genes_filtered.csv*
+Output: *[fasta_file]_centromeric_scores.csv*
+
+9. /bin/predict_centromeric.py
+Inputs: 
+	Required: *[fasta_file]_centromeric_scores.csv*, *[fasta_file]_metadata.csv*
+	Additional model input: /model/centromeric_model_v2.pkl <- provided in the repository 
+Output: *[fasta_file]_predictions.csv*
+
+10. /bin/GC.R
+Inputs: 
+	Required: *assembly.fasta*
+Output: *[fasta_file]_GC.csv*
+
+11. /bin/CTW.R
+Inputs: 
+	Required: *assembly.fasta*
+Output: *[fasta_file]_CTW.csv*
+
+12. /bin/CAP.R 
+Inputs:
+	Required: *[fasta_file]_predictions.csv*, 
+			  *[fasta_file]_repeats_filtered_reclassed.csv*, 
+			  *[fasta_file]_arrays_filtered_reclassed.csv*, 
+			  *[fasta_file]_genome_classes.csv*,
+			  *[fasta_file]_metadata.csv*
+	Optional: *[fasta_file]_TEs_filtered.csv*, 
+			  *[fasta_file]_genes_filtered.csv*
+Output: *[fasta_file]_CAP_plot.png*, 
+		*[fasta_file]_CAP_repeat_families.csv*, 
+		*[fasta_file]_CAP_dotplot.png*, 
+		*[fasta_file]_CAP_model.txt*
+		
+
 
