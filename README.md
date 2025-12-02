@@ -12,7 +12,7 @@ For input `genome.fasta`, CAP produces:
 | File | Description |
 |------|-------------|
 | `genome_CAP_plot.png` | Main centromere visualization |
-| `genome_CAP_dotplot.png` | Repeat array dotplot |
+| `genome_CAP_model.txt` | Text summary of centromere identification |
 
 ---
 
@@ -82,7 +82,7 @@ nextflow run . [options] --assembly <fasta>
 ```bash
 --te_gff PATH        EDTA TE annotation (.gff3)
 --gene_gff PATH      Helixer gene annotation (.gff)
---templates PATH     Custom repeat templates (FASTA)
+--trash2 PATH     	 TRASH_2 results directory, if provided TRASH modules will not be run
 --cores INT          Number of cores [default: 4]
 --outdir DIR         Output directory [default: ./results]
 ```
@@ -233,6 +233,7 @@ Output: *[fasta_file]_CAP_plot.png*,
 		*[fasta_file]_CAP_dotplot.png*, 
 		*[fasta_file]_CAP_model.txt*
 		
+
 
 
 
