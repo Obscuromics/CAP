@@ -39,8 +39,8 @@ ctw_data <- data.frame(chromosome = vector(mode = "character"),
 bin_edta <- 100000 # should be the same as in CAP.R 
 
 for(i in seq_along(fasta)) {
-  print(paste0("Processing chromosome: ", metadata_data$chromosome.name[i]))
   len <- metadata_data$size[i]
+  print(paste0("Processing chromosome: ", metadata_data$chromosome.name[i], ", ", i , " / ", length(fasta), " length: ", len, " bp."))
   
   
   bins <- max(1, round(len / bin_edta))
