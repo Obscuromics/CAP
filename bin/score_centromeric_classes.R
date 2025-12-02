@@ -249,7 +249,7 @@ all_scores <- data.frame()
     for(k in seq_len(nrow(chr_classes))) {
       chr_family_repeats <- sequence_repeats[sequence_repeats$new_class == chr_classes$class[k], ]
       chr_family_arrays <- arrays[arrays$new_class_num_ID == chr_classes$new_class_num_ID[k] & arrays$seqID == chromosomes[j], ]
-      cat("chromosome no" j, "/", length(chromosomes), "class no", k, "/", nrow(chr_classes), "arrays no:", nrow(chr_family_arrays), "\n")
+      cat("chromosome no", j, "/", length(chromosomes), "class no", k, "/", nrow(chr_classes), "arrays no:", nrow(chr_family_arrays), "\n")
       # if(nrow(chr_family_arrays) == 0) next
       if(nrow(chr_family_repeats) == 0) next
       # What is the repeat size?
