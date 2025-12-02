@@ -175,12 +175,14 @@ for(j in seq_along(chromosomes)) {
 scores <- cbind(scores_data, predictions_data)
 
 if (nrow(scores)) {
-  scores$ed_perc <- 100 * scores$centre_array_edit / scores$mean_length
-  scores$width_sd_perc <- 100 * scores$centre_array_width_sd / scores$mean_length
-  scores$ed_perc[scores$ed_perc < 0] = NA
-  scores$width_sd_perc[scores$width_sd_perc < 0] = NA
-  scores$ed_perc = 100 - scores$ed_perc
-  scores$width_sd_perc = 100 - scores$width_sd_perc
+  # scores$ed_perc <- 100 * scores$centre_array_edit / scores$mean_length
+  # scores$width_sd_perc <- 100 * scores$centre_array_width_sd / scores$mean_length
+  # scores$ed_perc[scores$ed_perc < 0] = NA
+  # scores$width_sd_perc[scores$width_sd_perc < 0] = NA
+  # scores$ed_perc = 100 - scores$ed_perc
+  # scores$width_sd_perc = 100 - scores$width_sd_perc
+  scores$ed_perc <- scores$centre_chromosome_edit
+  scores$width_sd_perc <- scores$centre_chromosome_width_sd
 }
 
 # ------------------------------------------------------------------ #

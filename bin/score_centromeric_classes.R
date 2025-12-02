@@ -320,25 +320,17 @@ all_scores <- data.frame()
         }
         
         if(nrow(array_repeats) < 10) next
-        central_repeats <- array_repeats[ceiling(nrow(array_repeats) / 4) : floor(3 * nrow(array_repeats) / 4), ]
         
-        repeats_to_align_IDs <- sample(seq_len(nrow(central_repeats)), round(nrow(central_repeats) * desired_fraction_to_align))
-        if(length(repeats_to_align_IDs) > max_repeats_to_align) {
-          repeats_to_align_IDs <- sample(seq_len(nrow(central_repeats)), max_repeats_to_align)
-        } else if(length(repeats_to_align_IDs) < min_repeats_to_align) {
-          if(nrow(central_repeats) > min_repeats_to_align) {
-            repeats_to_align_IDs <- sample(seq_len(nrow(central_repeats)), min_repeats_to_align)
-          } else {
-            repeats_to_align_IDs <- seq_len(nrow(central_repeats))
-          }
-        }
+        repeats_to_align <- round(nrow(array_repeats) * desired_fraction_to_align)
+        if(repeats_to_align > max_repeats_to_align) repeats_to_align <- max_repeats_to_align
+        if(repeats_to_align < min_repeats_to_align) repeats_to_align <- min_repeats_to_align
+        if(repeats_to_align > nrow(array_repeats)) repeats_to_align <- nrow(array_repeats)
         
-        sequences_to_align <- central_repeats$sequence[repeats_to_align_IDs]
-        if(length(sequences_to_align) < 2) {
-          cat("\n\n\n\n")
-          Message(paste0(" did not find repeats in one of the classes: ", classes$class[j], ", investigate"))
-          next
-        }
+        repeats_to_align_IDs <- sample(1 : nrow(array_repeats), repeats_to_align)
+        
+        
+        sequences_to_align <- array_repeats$sequence[repeats_to_align_IDs]
+        
         a <- capture.output({alignment_matrix = suppressWarnings(msa(sequences_to_align, method = "ClustalOmega", type = "dna"))})
         centre_consensus <- consensus_N(alignment_matrix, round(mean(nchar(sequences_to_align))))
         cumulative_adist_score = cumulative_adist_score + sum(adist(centre_consensus, sequences_to_align))
@@ -358,18 +350,15 @@ all_scores <- data.frame()
       if(nrow(chr_family_repeats) > 10) {
         # What is the repeat divergence within the central parts of the chromosome?
         #   Calculation: As above, to identify holocentrics
-        central_repeats <- chr_family_repeats[ceiling(nrow(chr_family_repeats) / 4) : floor(3 * nrow(chr_family_repeats) / 4), ]
-        repeats_to_align_IDs <- sample(seq_len(nrow(central_repeats)), round(nrow(central_repeats) * desired_fraction_to_align))
-        if(length(repeats_to_align_IDs) > max_repeats_to_align) {
-          repeats_to_align_IDs <- sample(seq_len(nrow(central_repeats)), max_repeats_to_align)
-        } else if(length(repeats_to_align_IDs) < min_repeats_to_align) {
-          if(nrow(central_repeats) > min_repeats_to_align) {
-            repeats_to_align_IDs <- sample(seq_len(nrow(central_repeats)), min_repeats_to_align)
-          } else {
-            repeats_to_align_IDs <- seq_len(nrow(central_repeats))
-          }
-        }
-        sequences_to_align <- central_repeats$sequence[repeats_to_align_IDs]
+        
+        repeats_to_align <- round(nrow(array_repeats) * desired_fraction_to_align)
+        if(repeats_to_align > max_repeats_to_align) repeats_to_align <- max_repeats_to_align
+        if(repeats_to_align < min_repeats_to_align) repeats_to_align <- min_repeats_to_align
+        if(repeats_to_align > nrow(array_repeats)) repeats_to_align <- nrow(array_repeats)
+        
+        repeats_to_align_IDs <- sample(1 : nrow(array_repeats), repeats_to_align)
+        
+        sequences_to_align <- array_repeats$sequence[repeats_to_align_IDs]
         # cat("Chr ", chromosomes[j], ", class ", chr_classes$class[k],", central chromosome repeats (", nrow(chr_family_repeats), " reps)", sep = "")
         
         # a <- capture.output({alignment_matrix = tolower(as.matrix(msa(sequences_to_align, method = "ClustalOmega", type = "dna")))})
