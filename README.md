@@ -42,6 +42,9 @@ cd CAP
 conda env create -f environment.yml
 conda activate cap-pipeline
 
+# Conda does not contain one of the libraries that need to be installed manually (if not, CAP will try to install it independently as well)
+R -e 'install.packages("BCT")'
+
 # Run
 nextflow run . -profile conda --assembly data/genome.fasta
 ```
@@ -230,5 +233,6 @@ Output: *[fasta_file]_CAP_plot.png*,
 		*[fasta_file]_CAP_dotplot.png*, 
 		*[fasta_file]_CAP_model.txt*
 		
+
 
 
