@@ -249,7 +249,7 @@ all_scores <- data.frame()
     for(k in seq_len(nrow(chr_classes))) {
       chr_family_repeats <- sequence_repeats[sequence_repeats$new_class == chr_classes$class[k], ]
       chr_family_arrays <- arrays[arrays$new_class_num_ID == chr_classes$new_class_num_ID[k] & arrays$seqID == chromosomes[j], ]
-      cat(j, "/", length(chromosomes), k, "/", nrow(chr_classes), "arrays:", nrow(chr_family_arrays), "\n")
+      cat("chromosome no" j, "/", length(chromosomes), "class no", k, "/", nrow(chr_classes), "arrays no:", nrow(chr_family_arrays), "\n")
       # if(nrow(chr_family_arrays) == 0) next
       if(nrow(chr_family_repeats) == 0) next
       # What is the repeat size?
@@ -331,6 +331,9 @@ all_scores <- data.frame()
         
         sequences_to_align <- array_repeats$sequence[repeats_to_align_IDs]
         
+        # Skip if no valid sequences
+        if(length(sequences_to_align) == 0 || all(is.na(sequences_to_align))) next
+        
         a <- capture.output({alignment_matrix = suppressWarnings(msa(sequences_to_align, method = "ClustalOmega", type = "dna"))})
         centre_consensus <- consensus_N(alignment_matrix, round(mean(nchar(sequences_to_align))))
         cumulative_adist_score = cumulative_adist_score + sum(adist(centre_consensus, sequences_to_align))
@@ -351,14 +354,18 @@ all_scores <- data.frame()
         # What is the repeat divergence within the central parts of the chromosome?
         #   Calculation: As above, to identify holocentrics
         
-        repeats_to_align <- round(nrow(array_repeats) * desired_fraction_to_align)
+        repeats_to_align <- round(nrow(chr_family_repeats) * desired_fraction_to_align)
         if(repeats_to_align > max_repeats_to_align) repeats_to_align <- max_repeats_to_align
         if(repeats_to_align < min_repeats_to_align) repeats_to_align <- min_repeats_to_align
-        if(repeats_to_align > nrow(array_repeats)) repeats_to_align <- nrow(array_repeats)
+        if(repeats_to_align > nrow(chr_family_repeats)) repeats_to_align <- nrow(chr_family_repeats)
         
-        repeats_to_align_IDs <- sample(1 : nrow(array_repeats), repeats_to_align)
+        repeats_to_align_IDs <- sample(1 : nrow(chr_family_repeats), repeats_to_align)
         
-        sequences_to_align <- array_repeats$sequence[repeats_to_align_IDs]
+        sequences_to_align <- chr_family_repeats$sequence[repeats_to_align_IDs]
+        
+        # Skip if no valid sequences
+        if(length(sequences_to_align) == 0 || all(is.na(sequences_to_align))) next
+        
         # cat("Chr ", chromosomes[j], ", class ", chr_classes$class[k],", central chromosome repeats (", nrow(chr_family_repeats), " reps)", sep = "")
         
         # a <- capture.output({alignment_matrix = tolower(as.matrix(msa(sequences_to_align, method = "ClustalOmega", type = "dna")))})
