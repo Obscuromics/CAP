@@ -47,7 +47,7 @@ for(i in seq_along(fasta)) {
   window.starts.CTW <- c(window.starts.CTW[-length(window.starts.CTW)]) + 1
   mids <- (window.starts.CTW + window.ends.CTW) / 2
   mids <- window.starts.CTW + bin_edta/2
-  if(FALSE) {
+  if(TRUE) {
     CTW.values =  lapply(seq_along(window.starts.CTW), function(X) CTW(as.character(subseq(fasta[[i]], window.starts.CTW[X], window.ends.CTW[X])), depth = 10, desired_alphabet = NULL, beta = NULL))
     log2e <- log(2,base=exp(1))
     CTW.values <- unlist(CTW.values)
