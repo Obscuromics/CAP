@@ -14,8 +14,6 @@ output_ctw <- args[2]
 
 # Load libraries
 suppressMessages({library(Biostrings)})
-if (!require("BCT", quietly = TRUE))
-  install.packages("BCT")
 suppressMessages({library(BCT)})
 
 # Load additional functions

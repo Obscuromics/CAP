@@ -47,6 +47,11 @@ dependencies:
   # Build and compilation tools for R packages
   - cmake
   - make
+  - c-compiler
+  - cxx-compiler
+  - gsl
+  - libblas
+  - liblapack
   
   # Additional utilities
   - glpk
