@@ -17,5 +17,8 @@ echo "Activating environment..."
 echo "Installing BCT package..."
 conda run -n $ENV_NAME Rscript install_bioc_packages.R
 
+echo "Setting permissions..."
+chmod +x modules/TRASH_2/src/TRASH.R
+
 echo "Setup complete! Activate the environment with:"
 echo "conda activate $ENV_NAME"

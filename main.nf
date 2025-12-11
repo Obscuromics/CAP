@@ -59,7 +59,7 @@ process TRASH2 {
     def t = params.templates ? "-t ${params.templates}" : ''
     """
     echo "Running TRASH2 with output dir: \$PWD"
-    ${workflow.projectDir}/modules/TRASH_2/src/TRASH.R -f ${assembly} -o \$PWD \
+    Rscript ${workflow.projectDir}/modules/TRASH_2/src/TRASH.R -f ${assembly} -o \$PWD \
         --cores_no ${task.cpus} \
         --max_rep_size ${params.max_rep_size} \
         ${t}

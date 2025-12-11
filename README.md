@@ -41,7 +41,8 @@ make install
 # OR manually: bash setup_conda.sh
 
 # Run the pipeline
-nextflow run . -profile conda --assembly data/genome.fasta
+conda activate cap
+nextflow run . --assembly data/genome.fasta
 ```
 
 **Windows (PowerShell):**
