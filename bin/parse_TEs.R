@@ -29,13 +29,45 @@ suppressMessages({library(seqinr)})
 source(file.path(Sys.getenv("WORKFLOW_DIR"), "bin", "auxfuns.R"))
 
 # Load data
-te_raw_data <- read.table(te_gff,
-                          header = FALSE,
-                          sep = "\t",
-                          comment.char = "#", 
-                          blank.lines.skip = TRUE,
-                          stringsAsFactors = FALSE)
-names(te_raw_data) <- c("seqID", "source", "type", "start", "end", "score", "strand", "phase", "attributes")
+is_bed <- grepl("\\.bed$", te_gff, ignore.case = TRUE)
+
+if (is_bed) {
+  message("Detected BED format based on file extension.")
+  te_raw_data <- read.table(te_gff,
+                            header = FALSE,
+                            sep = "\t",
+                            comment.char = "#", 
+                            blank.lines.skip = TRUE,
+                            stringsAsFactors = FALSE,
+                            quote = "")
+  
+  # Ensure we have enough columns based on user spec
+  # seqID, start, end, name, score, strand, source, type, phase, attributes
+  if (ncol(te_raw_data) < 10) {
+    stop("BED file must have at least 10 columns: seqID, start, end, name, score, strand, source, type, phase, attributes")
+  }
+  
+  # Assign names to the first 10 columns
+  colnames(te_raw_data)[1:10] <- c("seqID", "start", "end", "name", "score", "strand", "source", "type", "phase", "attributes")
+  
+  # Discard 'name' column
+  te_raw_data$name <- NULL
+  
+  # Convert 0-based start to 1-based start
+  te_raw_data$start <- te_raw_data$start + 1
+  
+} else {
+  message("Assuming GFF3 format.")
+  te_raw_data <- read.table(te_gff,
+                            header = FALSE,
+                            sep = "\t",
+                            comment.char = "#", 
+                            blank.lines.skip = TRUE,
+                            stringsAsFactors = FALSE,
+                            quote = "")
+  names(te_raw_data) <- c("seqID", "source", "type", "start", "end", "score", "strand", "phase", "attributes")
+}
+
 metadata <- read.csv(metadata_csv)
 
 # Rename TE seqID if needed
@@ -90,9 +122,6 @@ edta_modified = rbind(edta_non_rep_reg, edta_repeat_region)
 cat("edta format after modification:\n")
 str(edta_modified)
 
-# Adjust coordinates from 0-based to 1-based
-edta_modified$start = edta_modified$start + 1
-edta_modified$end = edta_modified$end + 1
 
 edta_modified$score = "."
 edta_modified$phase = "."
