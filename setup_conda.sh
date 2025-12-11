@@ -7,6 +7,12 @@ set -e
 ENV_NAME="cap-pipeline"
 ENV_FILE="environment.yml"
 
+# Check for submodules (TRASH2)
+if [ -z "$(ls -A modules/TRASH_2 2>/dev/null)" ]; then
+    echo "Initializing submodules..."
+    git submodule update --init --recursive
+fi
+
 echo "Creating conda environment '$ENV_NAME' from $ENV_FILE..."
 conda env create -f $ENV_FILE
 

@@ -33,7 +33,7 @@ Requires [Conda](https://docs.conda.io/en/latest/) (or Mamba) and [Nextflow](htt
 
 **Linux / macOS:**
 ```bash
-git clone https://github.com/vlothec/CAP.git
+git clone --recursive https://github.com/vlothec/CAP.git
 cd CAP
 
 # One-step setup (creates environment and installs dependencies)
@@ -47,7 +47,7 @@ nextflow run . --assembly data/genome.fasta
 
 **Windows (PowerShell):**
 ```powershell
-git clone https://github.com/vlothec/CAP.git
+git clone --recursive https://github.com/vlothec/CAP.git
 cd CAP
 
 # One-step setup

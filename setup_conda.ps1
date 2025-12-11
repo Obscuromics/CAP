@@ -6,6 +6,12 @@ $ErrorActionPreference = "Stop"
 $ENV_NAME = "cap-pipeline"
 $ENV_FILE = "environment.yml"
 
+# Check for submodules (TRASH2)
+if (-not (Test-Path "modules/TRASH_2/README.md")) {
+    Write-Host "Initializing submodules..."
+    git submodule update --init --recursive
+}
+
 Write-Host "Creating conda environment '$ENV_NAME' from $ENV_FILE..."
 conda env create -f $ENV_FILE
 
