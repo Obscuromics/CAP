@@ -12,8 +12,30 @@ if (length(args) != 2) {
 assembly_fasta <- args[1]
 output_ctw <- args[2]
 
+# Check for C++ binary alternative
+binary_path <- file.path(Sys.getenv("WORKFLOW_DIR"), "bin", "ctw-calc")
+# On Windows, it might have .exe extension
+if (.Platform$OS.type == "windows" && !file.exists(binary_path)) {
+  binary_path <- paste0(binary_path, ".exe")
+}
+
+if (file.exists(binary_path)) {
+  message("Found compiled CTW binary. Using it for faster calculation.")
+  # Run binary: <input> <output> <window_size>
+  cmd <- paste(shQuote(binary_path), shQuote(assembly_fasta), shQuote(output_ctw), "100000")
+  exit_code <- system(cmd)
+  if (exit_code == 0) {
+    quit(save = "no", status = 0)
+  } else {
+    warning("Binary execution failed. Falling back to R package.")
+  }
+}
+
 # Load libraries
 suppressMessages({library(Biostrings)})
+if (!require("BCT", quietly = TRUE)) {
+  stop("BCT package not installed and ctw-calc binary not found. Please install BCT or compile the C++ alternative.")
+}
 suppressMessages({library(BCT)})
 
 # Load additional functions

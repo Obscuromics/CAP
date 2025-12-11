@@ -3,15 +3,12 @@ name: cap-pipeline
 channels:
   - conda-forge
   - bioconda
-  - defaults
-  - anaconda
+  - nodefaults
 dependencies:
   # Core R and R packages
-  - r-base=4.4.3
-  - r-tidyverse
-  - r-optparse
-  - r-ggplot2
-  - r-data.table
+  # Pinning to 4.4.* allows patch updates (e.g. 4.4.4) which maintains binary compatibility
+  # but allows for security/bug fixes and easier dependency resolution.
+  - r-base=4.4
   - r-seqinr
   - r-stringr
   - r-stringdist
@@ -19,10 +16,7 @@ dependencies:
   - r-ape
   - r-doparallel
   - r-getopt
-  - r-yaml
   - r-renv
-  - r-devtools
-  - r-rcpp
   - bioconductor-biostrings
   - bioconductor-genomicranges
   - bioconductor-iranges
