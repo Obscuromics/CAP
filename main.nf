@@ -276,51 +276,61 @@ if (!params.assembly) {
 ╚══════════════════════════════════════════════════════════════════════════════╝
 Required:
   --assembly <path> Genome assembly in FASTA format
+
 Optional:
-  --te_gff <path> EDTA TE annotation (GFF3)
+  --te_gff <path>   EDTA TE annotation (GFF3)
   --gene_gff <path> Helixer gene annotation (GFF)
-  --templates <path> Custom repeat templates (FASTA)
-  --TRASH2 <dir>  Use precomputed TRASH2 outputs stored in <dir> (skip TRASH2 execution)
-  --cores <int> Number of CPU cores [default: ${params.cores}]
-  --outdir <path> Output directory [default: ${params.outdir}]
+  --trash2 <dir>    Use precomputed TRASH2 outputs stored in <dir> (skip TRASH2 execution)
+  --cores <int>     Number of CPU cores [default: ${params.cores}]
+  --outdir <path>   Output directory [default: ${params.outdir}]
+  --max_rep_size <int> Maximum repeat size for TRASH [default: ${params.max_rep_size}]
+
 ────────────────────────────────────────────────────────────────────────────────
                              INSTALLATION & RUN OPTIONS
 ────────────────────────────────────────────────────────────────────────────────
-1. DOCKER (Recommended – zero setup)
-   docker run --rm -v \$(pwd)/data:/data yourname/cap-pipeline:latest \\
-     nextflow run main.nf -profile docker --assembly /data/genome.fasta
-2. CONDA (Local Linux/macOS/WSL)
-   conda env create -f environment.yml
+1. DOCKER (not available yet)
+   nextflow run vlothec/CAP -profile docker --assembly data/genome.fasta
+
+2. CONDA (Local Linux/macOS/Windows)
+   # Setup
+   make install  # or ./setup_conda.sh (Linux/Mac) or .\\setup_conda.ps1 (Windows)
+   
+   # Run
    conda activate cap-pipeline
-   nextflow run main.nf -profile conda --assembly data/genome.fasta
-3. R + renv (Lightweight, R-only)
-   R -e 'renv::restore()' # installs exact R packages
-   nextflow run main.nf -profile renv --assembly data/genome.fasta
+   nextflow run . --assembly data/genome.fasta
+
+3. R + renv (Manual)
+   R -e 'renv::restore()'
+   nextflow run . -profile renv --assembly data/genome.fasta
+
 ────────────────────────────────────────────────────────────────────────────────
                                    EXAMPLES
 ────────────────────────────────────────────────────────────────────────────────
-# Docker (HPC or local)
-docker run --rm -v \$(pwd)/test:/data yourname/cap-pipeline:latest \\
-  nextflow run main.nf -profile docker \\
-    --assembly /data/sample.fasta \\
-    --te_gff /data/EDTA.gff3 \\
-    --outdir /data/results
-# Conda
-nextflow run main.nf -profile conda \\
+# Basic run
+nextflow run . --assembly data/genome.fasta
+
+# With annotations
+nextflow run . \\
   --assembly data/genome.fasta \\
+  --te_gff data/EDTA.gff3 \\
   --gene_gff data/helixer.gff
-# renv
-nextflow run main.nf -profile renv \\
-  --assembly data/genome.fasta
+
+# Using precomputed TRASH2 results
+nextflow run . \\
+  --assembly data/genome.fasta \\
+  --trash2 results/TRASH_output
+
 ────────────────────────────────────────────────────────────────────────────────
                                     OUTPUTS
 ────────────────────────────────────────────────────────────────────────────────
-- *_CAP_plot.png
-- *_CAP_dotplot.png
+- *_CAP_plot_*.png
 - *_CAP_repeat_families.csv
 - *_centromeric_scores.csv
 - *_predictions.csv
 - *_metadata.csv
+- *_GC.csv
+- *_CTW.csv
+
 See README.md for full details: https://github.com/vlothec/CAP
 """
     println help
