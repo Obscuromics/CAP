@@ -41,11 +41,6 @@ if (is_bed) {
                             stringsAsFactors = FALSE,
                             quote = "")
   
-  # Ensure we have enough columns based on user spec
-  # seqID, start, end, name, score, strand, source, type, phase, attributes
-  if (ncol(te_raw_data) < 10) {
-    stop("BED file must have at least 10 columns: seqID, start, end, name, score, strand, source, type, phase, attributes")
-  }
   
   # Assign names to the first 10 columns
   colnames(te_raw_data)[1:10] <- c("seqID", "start", "end", "name", "score", "strand", "source", "type", "phase", "attributes")
@@ -55,6 +50,8 @@ if (is_bed) {
   
   # Convert 0-based start to 1-based start
   te_raw_data$start <- te_raw_data$start + 1
+
+  te_raw_data <- te_raw_data[, c("seqID", "source", "type", "start", "end", "score", "strand", "phase", "attributes")]
   
 } else {
   message("Assuming GFF3 format.")
