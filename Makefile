@@ -3,8 +3,8 @@ install:
 	bash setup_conda.sh
 	@echo "Compiling BCT C++ alternative..."
 	# We try to use the compiler from the new environment if possible, or system compiler
-	# This assumes 'conda run' works
-	conda run -n cap-pipeline make -C bin/src/BCT
+	# The '-' prefix makes this step non-fatal (ignores errors)
+	-conda run -n cap-pipeline make -C bin/src/BCT || echo "C++ compilation failed, the pipeline will rely on the 'BCT' R package."
 
 compile:
 	make -C bin/src/BCT
