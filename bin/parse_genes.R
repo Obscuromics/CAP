@@ -56,6 +56,9 @@ for (j in seq_along(new_cols)) {
 }
 
 
+# Adjust coordinates from 0-based to 1-based
+gene_full$start = gene_full$start + 1
+gene_full$end = gene_full$end + 1
 
 # Save output
 write.csv(gene_full, file = output_genes_parsed, row.names = FALSE)  # Assuming parsed_data is created in your code

@@ -88,6 +88,10 @@ edta_repeat_region$type <- ifelse(is.na(idx), edta_repeat_region$type, names$sho
 
 edta_modified = rbind(edta_non_rep_reg, edta_repeat_region)
 
+# Adjust coordinates from 0-based to 1-based
+edta_modified$start = edta_modified$start + 1
+edta_modified$end = edta_modified$end + 1
+
 edta_modified$score = "."
 edta_modified$phase = "."
 
