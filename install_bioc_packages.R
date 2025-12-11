@@ -13,8 +13,7 @@ if (!require("BCT", quietly = TRUE)) {
       message("✓ BCT installed successfully.")
     },
     error = function(e) {
-      message("! Warning: BCT installation from CRAN failed.")
-      message("! This is expected on some systems. The pipeline will compile a local C++ alternative instead.")
+      stop("! Critical Error: BCT installation from CRAN failed. Local compilation also failed, the pipeline cannot function without BCT.")
     },
     warning = function(w) {
       message("! Warning during BCT installation.")
