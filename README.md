@@ -41,7 +41,7 @@ make install
 # OR manually: bash setup_conda.sh
 
 # Run the pipeline
-conda activate cap
+conda activate cap-pipeline
 nextflow run . --assembly data/genome.fasta
 ```
 
@@ -54,7 +54,8 @@ cd CAP
 .\setup_conda.ps1
 
 # Run the pipeline
-nextflow run . -profile conda --assembly data/genome.fasta
+conda activate cap-pipeline
+nextflow run . --assembly data/genome.fasta
 ```
 
 ### Option 3: R + renv (Manual)
