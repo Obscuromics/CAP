@@ -119,34 +119,88 @@ all_scores <- data.frame()
       sequence_edta_no_rep$start <- sequence_edta_no_rep$start - sequence_edta_no_rep$adjustment
       sequence_edta_no_rep$end <- sequence_edta_no_rep$end - sequence_edta_no_rep$adjustment
       
-      # Peak identification
-      TE_coordinates <- list()
-      for(edta_id in seq_len(nrow(sequence_edta_no_rep))) {
-        TE_coordinates <- append(TE_coordinates, list(sequence_edta_no_rep$start[edta_id] : sequence_edta_no_rep$end[edta_id]))
+      # Peak identification (Memory Optimized)
+      te_ranges <- IRanges(start = sequence_edta_no_rep$start, end = sequence_edta_no_rep$end)
+      te_ranges <- te_ranges[end(te_ranges) > 0]
+      start(te_ranges)[start(te_ranges) < 1] <- 1
+      
+      if (length(te_ranges) == 0) next
+      
+      te_cov <- coverage(te_ranges)
+      min_c <- min(start(te_ranges))
+      max_c <- max(end(te_ranges))
+      breaks <- seq(min_c, max_c, length.out = 25)
+      
+      bin_starts <- floor(breaks[-length(breaks)])
+      bin_ends <- floor(breaks[-1]) - 1
+      bin_ends[length(bin_ends)] <- floor(breaks[length(breaks)])
+      bin_starts[bin_starts < 1] <- 1
+      len_cov <- length(te_cov)
+      bin_ends[bin_ends > len_cov] <- len_cov
+      bin_starts[bin_starts > len_cov] <- len_cov
+      
+      valid_bins <- bin_starts <= bin_ends
+      bin_counts <- numeric(length(bin_starts))
+      if(any(valid_bins)) {
+        v <- Views(te_cov, start = bin_starts[valid_bins], end = bin_ends[valid_bins])
+        bin_counts[valid_bins] <- viewSums(v)
       }
-      TE_coordinates <- unlist(TE_coordinates)
-      length(TE_coordinates)
-      length(unique(TE_coordinates))
-      TE_coordinates <- TE_coordinates[!is.na(TE_coordinates) & TE_coordinates > 0]
-      if(length(TE_coordinates) == 0) next
-      # find arithmetic mean of all scores as the “peak”
-      hist_EDTA <- hist(TE_coordinates, breaks = seq(min(TE_coordinates), max(TE_coordinates), length.out = 25), plot = FALSE)
-      counts <- c(hist_EDTA$counts[1], hist_EDTA$counts[1], hist_EDTA$counts, hist_EDTA$counts[length(hist_EDTA$counts)], hist_EDTA$counts[length(hist_EDTA$counts)])
+      
+      counts <- c(bin_counts[1], bin_counts[1], bin_counts, bin_counts[length(bin_counts)], bin_counts[length(bin_counts)])
       ma_values <- ma(counts)[3 : (length(counts) - 2)]
-      edta_peak <- hist_EDTA$mids[which.max(ma_values)]
+      mids <- (breaks[-length(breaks)] + breaks[-1]) / 2
+      edta_peak <- mids[which.max(ma_values)]
       
-      # calculate TE bp positions density in 2% chromosome length bins
-      # calculate window TE density vs distance to peak and test it’s correlation
+      # Distance Distribution (Memory Optimized)
+      r_right <- te_ranges[start(te_ranges) >= edta_peak]
+      d_right <- IRanges(start = floor(start(r_right) - edta_peak), end = floor(end(r_right) - edta_peak))
       
-      distance_to_mid <- abs(edta_peak - TE_coordinates)
+      r_left <- te_ranges[end(te_ranges) <= edta_peak]
+      d_left <- IRanges(start = floor(edta_peak - end(r_left)), end = floor(edta_peak - start(r_left)))
       
-      dist_to_mid_hist <- hist(distance_to_mid, breaks = 25, plot = FALSE)
-      dist_to_mid_hist <- data.frame(dist_to_mid = log10(100 * dist_to_mid_hist$mids / chromosome_no_rep_size),
-                                     counts = (dist_to_mid_hist$counts) / (dist_to_mid_hist$breaks[2:length(dist_to_mid_hist$breaks)] - dist_to_mid_hist$breaks[1:(length(dist_to_mid_hist$breaks) - 1)]) / 2)
-      dist_to_mid_hist <- dist_to_mid_hist[dist_to_mid_hist$counts != -Inf,]
-      lm_coef_TE <- lm(counts ~ dist_to_mid, dist_to_mid_hist)
+      r_cross <- te_ranges[start(te_ranges) < edta_peak & end(te_ranges) > edta_peak]
+      d_cross_1 <- IRanges(start = 0, end = floor(edta_peak - start(r_cross)))
+      d_cross_2 <- IRanges(start = 0, end = floor(end(r_cross) - edta_peak))
       
+      all_dist_ranges <- c(d_right, d_left, d_cross_1, d_cross_2)
+      all_dist_ranges <- all_dist_ranges[width(all_dist_ranges) > 0]
       
+      if(length(all_dist_ranges) == 0) {
+         lm_coef_TE <- list(coefficients = c(0, 0))
+      } else {
+        dist_cov <- coverage(all_dist_ranges)
+        max_dist <- max(end(all_dist_ranges))
+        d_breaks <- seq(0, max_dist, length.out = 26)
+        
+        d_bin_starts <- floor(d_breaks[-length(d_breaks)]) + 1
+        d_bin_ends <- floor(d_breaks[-1])
+        d_bin_starts[1] <- 1
+        len_d_cov <- length(dist_cov)
+        d_bin_ends[d_bin_ends > len_d_cov] <- len_d_cov
+        
+        d_counts <- numeric(length(d_bin_starts))
+        valid_d <- d_bin_starts <= d_bin_ends
+        if(any(valid_d)) {
+          v_d <- Views(dist_cov, start = d_bin_starts[valid_d], end = d_bin_ends[valid_d])
+          d_counts[valid_d] <- viewSums(v_d)
+        }
+        
+        d_mids <- (d_breaks[-length(d_breaks)] + d_breaks[-1]) / 2
+        d_widths <- diff(d_breaks)
+        d_density <- d_counts / d_widths / 2
+        
+        dist_to_mid_hist <- data.frame(
+          dist_to_mid = log10(100 * d_mids / chromosome_no_rep_size),
+          counts = d_density
+        )
+        dist_to_mid_hist <- dist_to_mid_hist[dist_to_mid_hist$counts > 0 & is.finite(dist_to_mid_hist$dist_to_mid),]
+        
+        if(nrow(dist_to_mid_hist) < 2) {
+          lm_coef_TE <- list(coefficients = c(0, 0))
+        } else {
+          lm_coef_TE <- lm(counts ~ dist_to_mid, dist_to_mid_hist)
+        }
+      }
     }
     
     if(!no_heli) {
@@ -160,30 +214,89 @@ all_scores <- data.frame()
       sequence_genes_no_rep$start <- sequence_genes_no_rep$start - sequence_genes_no_rep$adjustment
       sequence_genes_no_rep$end <- sequence_genes_no_rep$end - sequence_genes_no_rep$adjustment
       
+      # Valley identification (Memory Optimized)
+      gene_ranges <- IRanges(start = sequence_genes_no_rep$start, end = sequence_genes_no_rep$end)
+      gene_ranges <- gene_ranges[end(gene_ranges) > 0]
+      start(gene_ranges)[start(gene_ranges) < 1] <- 1
       
-      # Valley identification
-      gene_coordinates <- list()
-      for(edta_id in seq_len(nrow(sequence_genes_no_rep))) {
-        gene_coordinates <- append(gene_coordinates, list(sequence_genes_no_rep$start[edta_id] : sequence_genes_no_rep$end[edta_id]))
+      if (length(gene_ranges) == 0) next
+      
+      gene_cov <- coverage(gene_ranges)
+      min_c <- min(start(gene_ranges))
+      max_c <- max(end(gene_ranges))
+      breaks <- seq(min_c, max_c, length.out = 25)
+      
+      bin_starts <- floor(breaks[-length(breaks)])
+      bin_ends <- floor(breaks[-1]) - 1
+      bin_ends[length(bin_ends)] <- floor(breaks[length(breaks)])
+      bin_starts[bin_starts < 1] <- 1
+      len_cov <- length(gene_cov)
+      bin_ends[bin_ends > len_cov] <- len_cov
+      bin_starts[bin_starts > len_cov] <- len_cov
+      
+      valid_bins <- bin_starts <= bin_ends
+      bin_counts <- numeric(length(bin_starts))
+      if(any(valid_bins)) {
+        v <- Views(gene_cov, start = bin_starts[valid_bins], end = bin_ends[valid_bins])
+        bin_counts[valid_bins] <- viewSums(v)
       }
-      gene_coordinates <- unlist(gene_coordinates)
-      length(gene_coordinates)
-      length(unique(gene_coordinates))
-
-      gene_coordinates <- gene_coordinates[!is.na(gene_coordinates) & gene_coordinates > 0]
-      if(length(gene_coordinates) == 0) next
       
-      hist_gene <- hist(gene_coordinates, breaks = seq(min(gene_coordinates), max(gene_coordinates), length.out = 25), plot = FALSE)
-      counts <- c(hist_gene$counts[1], hist_gene$counts[1], hist_gene$counts, hist_gene$counts[length(hist_gene$counts)], hist_gene$counts[length(hist_gene$counts)])
+      counts <- c(bin_counts[1], bin_counts[1], bin_counts, bin_counts[length(bin_counts)], bin_counts[length(bin_counts)])
       ma_values <- ma(counts)[3 : (length(counts) - 2)]
-      gene_valley <- hist_gene$mids[which.min(ma_values)]
+      mids <- (breaks[-length(breaks)] + breaks[-1]) / 2
+      gene_valley <- mids[which.min(ma_values)]
       
       
-      dist_to_mid_hist <- hist(distance_to_mid, breaks = 25)
-      dist_to_mid_hist <- data.frame(dist_to_mid = log10(100 * dist_to_mid_hist$mids / chromosome_no_rep_size),
-                                     counts = (dist_to_mid_hist$counts) / (dist_to_mid_hist$breaks[2:length(dist_to_mid_hist$breaks)] - dist_to_mid_hist$breaks[1:(length(dist_to_mid_hist$breaks) - 1)]) / 2)
-      dist_to_mid_hist <- dist_to_mid_hist[dist_to_mid_hist$counts != -Inf,]
-      lm_coef_genes <- lm(counts ~ dist_to_mid, dist_to_mid_hist)
+      # Distance Distribution (Memory Optimized)
+      r_right <- gene_ranges[start(gene_ranges) >= gene_valley]
+      d_right <- IRanges(start = floor(start(r_right) - gene_valley), end = floor(end(r_right) - gene_valley))
+      
+      r_left <- gene_ranges[end(gene_ranges) <= gene_valley]
+      d_left <- IRanges(start = floor(gene_valley - end(r_left)), end = floor(gene_valley - start(r_left)))
+      
+      r_cross <- gene_ranges[start(gene_ranges) < gene_valley & end(gene_ranges) > gene_valley]
+      d_cross_1 <- IRanges(start = 0, end = floor(gene_valley - start(r_cross)))
+      d_cross_2 <- IRanges(start = 0, end = floor(end(r_cross) - gene_valley))
+      
+      all_dist_ranges <- c(d_right, d_left, d_cross_1, d_cross_2)
+      all_dist_ranges <- all_dist_ranges[width(all_dist_ranges) > 0]
+      
+      if(length(all_dist_ranges) == 0) {
+         lm_coef_genes <- list(coefficients = c(0, 0))
+      } else {
+        dist_cov <- coverage(all_dist_ranges)
+        max_dist <- max(end(all_dist_ranges))
+        d_breaks <- seq(0, max_dist, length.out = 26)
+        
+        d_bin_starts <- floor(d_breaks[-length(d_breaks)]) + 1
+        d_bin_ends <- floor(d_breaks[-1])
+        d_bin_starts[1] <- 1
+        len_d_cov <- length(dist_cov)
+        d_bin_ends[d_bin_ends > len_d_cov] <- len_d_cov
+        
+        d_counts <- numeric(length(d_bin_starts))
+        valid_d <- d_bin_starts <= d_bin_ends
+        if(any(valid_d)) {
+          v_d <- Views(dist_cov, start = d_bin_starts[valid_d], end = d_bin_ends[valid_d])
+          d_counts[valid_d] <- viewSums(v_d)
+        }
+        
+        d_mids <- (d_breaks[-length(d_breaks)] + d_breaks[-1]) / 2
+        d_widths <- diff(d_breaks)
+        d_density <- d_counts / d_widths / 2
+        
+        dist_to_mid_hist <- data.frame(
+          dist_to_mid = log10(100 * d_mids / chromosome_no_rep_size),
+          counts = d_density
+        )
+        dist_to_mid_hist <- dist_to_mid_hist[dist_to_mid_hist$counts > 0 & is.finite(dist_to_mid_hist$dist_to_mid),]
+        
+        if(nrow(dist_to_mid_hist) < 2) {
+          lm_coef_genes <- list(coefficients = c(0, 0))
+        } else {
+          lm_coef_genes <- lm(counts ~ dist_to_mid, dist_to_mid_hist)
+        }
+      }
       
     }
     
