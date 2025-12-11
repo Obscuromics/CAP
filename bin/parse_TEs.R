@@ -87,6 +87,8 @@ idx <- match(edta_repeat_region$name, names$names)
 edta_repeat_region$type <- ifelse(is.na(idx), edta_repeat_region$type, names$short[idx])
 
 edta_modified = rbind(edta_non_rep_reg, edta_repeat_region)
+cat("edta format after modification:\n")
+str(edta_modified)
 
 # Adjust coordinates from 0-based to 1-based
 edta_modified$start = edta_modified$start + 1
