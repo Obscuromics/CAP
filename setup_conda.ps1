@@ -30,5 +30,8 @@ if ($MakeExitCode -eq 0) {
     conda run -n $ENV_NAME Rscript install_bioc_packages.R
 }
 
+# Fix for LevelDB on Lustre/HPC filesystems
+$env:NXF_OPTS="-Dleveldb.mmap=false"
+
 Write-Host "Setup complete! Activate the environment with:"
 Write-Host "conda activate $ENV_NAME"

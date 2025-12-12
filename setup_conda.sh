@@ -34,5 +34,8 @@ fi
 echo "Setting permissions..."
 chmod +x modules/TRASH_2/src/TRASH.R
 
+# Fix for LevelDB on Lustre/HPC filesystems
+export NXF_OPTS="-Dleveldb.mmap=false"
+
 echo "Setup complete! Activate the environment with:"
 echo "conda activate $ENV_NAME"
