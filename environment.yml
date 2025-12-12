@@ -37,6 +37,7 @@ dependencies:
   # Version control and workflow
   - git
   - nextflow
+  - openjdk=17  # Pin Java to LTS version to avoid compatibility issues with Nextflow/LevelDB on newer Java versions
 
   # Build and compilation tools for R packages
   - cmake
