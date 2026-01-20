@@ -207,7 +207,11 @@ classes_to_plot <- classes_to_plot[order(classes_to_score, decreasing = T)]
 cat("Classes to plot:", classes_to_plot, "\n")
 
 
-
+# ------------------------------------------------------------------ #
+#  INITIALIZE DENSITY DATA STRUCTURE
+# ------------------------------------------------------------------ #
+# This will store pre-computed densities for replotting instead of raw data
+chromosome_densities <- list()
 
 # ------------------------------------------------------------------ #
 #  PLOT NAME
@@ -310,6 +314,22 @@ for(k in 1 : length(chromosomes_sets)) {
     edt_chr <- if (!no_edta) subset(edta, seqID == chr) else data.frame()
     gen_chr <- if (!no_heli) subset(genes, seqID == chr) else data.frame()
     
+    # Initialize density storage for this chromosome
+    chr_density_data <- list(
+      chromosome = chr,
+      length = len,
+      rep_coverage_windows = numeric(),
+      rep_coverage_values = numeric(),
+      edta_coverage_windows = numeric(),
+      edta_coverage_values = numeric(),
+      family_coverage = list(),
+      edta_family_coverage = list(),
+      te_repeat_density = numeric(),
+      te_repeat_density_mids = numeric(),
+      gene_density = numeric(),
+      gene_density_mids = numeric()
+    )
+    
     print(paste0("Genome ", assembly_name, " | Chromosome ", j, "/", length(chromosomes)))
     
     plot(NA,NA, xlim = c(1,100), ylim = c(1,300), xlab = "", ylab = "", axes = F)
@@ -342,23 +362,32 @@ for(k in 1 : length(chromosomes_sets)) {
       calculate.repeats.percentage.in.windows(win_rep, rep_chr$start, rep_chr$width, len)
     } else rep(0, length(win_rep))
     rep_cov[rep_cov == 0] <- NA; rep_cov[rep_cov > 100] <- 100
+    
+    # Save repeat coverage density
+    chr_density_data$rep_coverage_windows <- win_rep
+    chr_density_data$rep_coverage_values <- rep_cov
+    
     plot(win_rep, rep_cov, type="h", col="#CCCCCC", ylim=c(0,100), xaxt="n", yaxt="n", xlab="", ylab="")
     mtext("REP%         per 10 Kbp", side = 2, line = 0, col = "grey", cex = cex_factor* 0.5, at = 10, adj = 0)
     axis(side = 2, labels = c("0","100"), at = c(0,100))
     
     # GC (TODO only if requested)
     gc_chs_data <- gc_data[gc_data$chromosome == chr,]
-    gc_mids <- gc_chs_data$bin_mid
-    gc_vals <- gc_chs_data$bin_value
-    lines(gc_mids, gc_vals, type = "l", lwd = 2, cex = cex_factor * 1)
-    mtext("GC%            per  2 Kbp", side = 2, line = 2, col = "black", cex = cex_factor* 0.5, at = 10, adj = 0)
+    if (nrow(gc_chs_data) > 0) {
+      gc_mids <- gc_chs_data$bin_mid
+      gc_vals <- gc_chs_data$bin_value
+      lines(gc_mids, gc_vals, type = "l", lwd = 2, cex = cex_factor * 1)
+      mtext("GC%            per  2 Kbp", side = 2, line = 2, col = "black", cex = cex_factor* 0.5, at = 10, adj = 0)
+    }
     
     # CTW (TODO only if requested)
     ctw_chs_data <- ctw_data[ctw_data$chromosome == chr,]
-    ctw_mids <- ctw_chs_data$bin_mid
-    ctw_vals <- ctw_chs_data$bin_value
-    lines(x = ctw_mids, ctw_vals, type = "l", col = "#FFA500", lwd = 2, cex = cex_factor * 1)
-    mtext("CTW            per  2 Kbp D10", side = 2, line = 3, col = "#FFA500", cex = cex_factor* 0.5, at = 10, adj = 0)
+    if (nrow(ctw_chs_data) > 0) {
+      ctw_mids <- ctw_chs_data$bin_mid
+      ctw_vals <- ctw_chs_data$bin_value
+      lines(x = ctw_mids, ctw_vals, type = "l", col = "#FFA500", lwd = 2, cex = cex_factor * 1)
+      mtext("CTW            per  2 Kbp D10", side = 2, line = 3, col = "#FFA500", cex = cex_factor* 0.5, at = 10, adj = 0)
+    }
     
     
     # Families
@@ -370,6 +399,8 @@ for(k in 1 : length(chromosomes_sets)) {
         fam <- fam[fam$end <= len,]
         cov <- calculate.repeats.percentage.in.windows(win_rep, fam$start, fam$width, len)
         cov[cov == 0] <- NA; cov[cov > 100] <- 100
+        # Save family coverage
+        chr_density_data$family_coverage[[classes_to_plot[m]]] <- cov
         lines(win_rep, cov, col = palette[m], pch=16, type="o", lwd = 2, cex = cex_factor * 1)
       }
       mtext("SIG REP% per 10 Kbp", side = 2, line = 1, col = "#88CCEE", cex = cex_factor* 0.5, at = 10, adj = 0)
@@ -385,6 +416,11 @@ for(k in 1 : length(chromosomes_sets)) {
       calculate.repeats.percentage.in.windows(win_edta, edt_chr$start, edt_chr$width, len)
     } else rep(0, length(win_edta))
     edt_cov[edt_cov == 0] <- NA; edt_cov[edt_cov > 100] <- 100
+    
+    # Save EDTA coverage density
+    chr_density_data$edta_coverage_windows <- win_edta + bin_edta/2
+    chr_density_data$edta_coverage_values <- edt_cov
+    
     plot(win_edta + bin_edta/2, edt_cov, type="h", col="#CCCCCC", ylim=c(0,100), xaxt="n", yaxt="n", xlab="", ylab="")
     mtext("EDTA%           per 100 Kbp", side = 2, line = 0, col = "grey", cex = cex_factor* 0.5, at = 10, adj = 0)
     axis(2, col="grey", at = c(0,100), labels = c("0", "100"))
@@ -398,6 +434,8 @@ for(k in 1 : length(chromosomes_sets)) {
         if (!nrow(cls)) next
         cov <- calculate.repeats.percentage.in.windows(win_edta, cls$end, cls$width, len)
         cov[cov == 0] <- NA; cov[cov > 100] <- 100
+        # Save EDTA family coverage
+        chr_density_data$edta_family_coverage[[m]] <- list(class_index = m, values = cov)
         lines(win_edta + (bin_edta/2), cov, col = edta_classes_colours[m], pch=16, type="o", lwd = 2, cex = cex_factor * 1)
       }
       mtext("FAM EDTA%  per 100 Kbp", side = 2, line = 1, col = "red", cex = cex_factor* 0.5, at = 10, adj = 0)
@@ -407,15 +445,26 @@ for(k in 1 : length(chromosomes_sets)) {
     te_coords <- c()
     if (!no_edta && nrow(edt_chr)) te_coords <- c(te_coords, unlist(mapply(`:`, edt_chr$start, edt_chr$end)))
     if (nrow(rep_chr))          te_coords <- c(te_coords, unlist(mapply(`:`, rep_chr$start, rep_chr$end)))
-    if (length(te_coords)) {
+    if (length(te_coords) > 0) {
       te_coords <- te_coords[te_coords <= len & te_coords >= 1]
-      te_hist <- hist(te_coords, breaks = seq(0, len, length.out = bin_gene), plot = FALSE)
-      te_ma   <- ma(c(te_hist$counts[1], te_hist$counts[1], te_hist$counts,
-                      te_hist$counts[length(te_hist$counts)], te_hist$counts[length(te_hist$counts)]))[3:(length(te_hist$counts)+2)]
-      par(new = TRUE)
-      plot(te_hist$mids, te_ma, type="b", col="#0066aa", lwd=4, ylim=c(0, max(te_ma)), yaxt="n", xlab="", ylab="")
-      axis(4, col="#0066aa", line = 0, col.axis = "#0066aa")
-      mtext("      TE+REP dens per 100 Kbp", side = 2, line = 2, col = "#0066aa", cex = cex_factor* 0.5, at = 20, adj = 0)
+      if (length(te_coords) > 0) {
+        te_hist <- hist(te_coords, breaks = seq(0, len, length.out = bin_gene), plot = FALSE)
+        # Only apply moving average if there are enough data points (need at least 5 for padding)
+        if (length(te_hist$counts) >= 5) {
+          te_ma   <- ma(c(te_hist$counts[1], te_hist$counts[1], te_hist$counts,
+                          te_hist$counts[length(te_hist$counts)], te_hist$counts[length(te_hist$counts)]))[3:(length(te_hist$counts)+2)]
+          # Save TE+repeat density
+          chr_density_data$te_repeat_density <- te_ma
+          chr_density_data$te_repeat_density_mids <- te_hist$mids
+          par(new = TRUE)
+          max_te_ma <- max(te_ma, na.rm = TRUE)
+          if (is.finite(max_te_ma) && max_te_ma > 0) {
+            plot(te_hist$mids, te_ma, type="b", col="#0066aa", lwd=4, ylim=c(0, max_te_ma), yaxt="n", xlab="", ylab="")
+            axis(4, col="#0066aa", line = 0, col.axis = "#0066aa")
+            mtext("      TE+REP dens per 100 Kbp", side = 2, line = 2, col = "#0066aa", cex = cex_factor* 0.5, at = 20, adj = 0)
+          }
+        }
+      }
     }
     
     # # HiC
@@ -434,14 +483,28 @@ for(k in 1 : length(chromosomes_sets)) {
     if (!no_heli && nrow(gen_chr)) {
       gen_coords <- unlist(mapply(`:`, gen_chr$start, gen_chr$end))
       gen_coords <- gen_coords[gen_coords <= len & gen_coords >= 1]
-      gen_hist <- hist(gen_coords, breaks = seq(0, len, length.out = bin_gene), plot = FALSE)
-      gen_ma   <- ma(c(gen_hist$counts[1], gen_hist$counts[1], gen_hist$counts,
-                       gen_hist$counts[length(gen_hist$counts)], gen_hist$counts[length(gen_hist$counts)]))[3:(length(gen_hist$counts)+2)]
-      par(new = TRUE)
-      plot(gen_hist$mids, gen_ma, type="b", col="#00bb33", lwd=4, ylim=c(0, max(gen_ma)), yaxt="n", xlab="", ylab="")
-      axis(4, col="#00bb33", line = 2, col.axis = "#00bb33")
-      mtext("      GENE dens     per 100 Kbp", side = 2, line = 3, col = "#00bb33", cex = cex_factor* 0.5, at = 10, adj = 0)
+      if (length(gen_coords) > 0) {
+        gen_hist <- hist(gen_coords, breaks = seq(0, len, length.out = bin_gene), plot = FALSE)
+        # Only apply moving average if there are enough data points (need at least 5 for padding)
+        if (length(gen_hist$counts) >= 5) {
+          gen_ma   <- ma(c(gen_hist$counts[1], gen_hist$counts[1], gen_hist$counts,
+                           gen_hist$counts[length(gen_hist$counts)], gen_hist$counts[length(gen_hist$counts)]))[3:(length(gen_hist$counts)+2)]
+          # Save gene density
+          chr_density_data$gene_density <- gen_ma
+          chr_density_data$gene_density_mids <- gen_hist$mids
+          par(new = TRUE)
+          max_gen_ma <- max(gen_ma, na.rm = TRUE)
+          if (is.finite(max_gen_ma) && max_gen_ma > 0) {
+            plot(gen_hist$mids, gen_ma, type="b", col="#00bb33", lwd=4, ylim=c(0, max_gen_ma), yaxt="n", xlab="", ylab="")
+            axis(4, col="#00bb33", line = 2, col.axis = "#00bb33")
+            mtext("      GENE dens     per 100 Kbp", side = 2, line = 3, col = "#00bb33", cex = cex_factor* 0.5, at = 10, adj = 0)
+          }
+        }
+      }
     }
+    
+    # Store chromosome density data
+    chromosome_densities[[chr]] <- chr_density_data
   }
   
   dev.off()
@@ -454,6 +517,25 @@ for(k in 1 : length(chromosomes_sets)) {
 }
 
 write.csv(classes_to_plot, file = file.path(paste0(assembly_name, "_CAP_repeat_families.csv")), row.names = FALSE)
+
+# ------------------------------------------------------------------ #
+#  FINALIZE PLOT DATA WITH COMPUTED DENSITIES
+# ------------------------------------------------------------------ #
+
+plot_data <- list(
+  assembly_name = assembly_name,
+  chromosomes_sets = chromosomes_sets,
+  chromosomes_len_sets = chromosomes_len_sets,
+  scores = scores,
+  gc_data = gc_data,
+  ctw_data = ctw_data,
+  classes_to_plot = classes_to_plot,
+  edta_classes = edta_classes,
+  edta_classes_colours = edta_classes_colours,
+  chromosome_densities = chromosome_densities,
+  no_edta = no_edta,
+  no_heli = no_heli
+)
 
 
 # ------------------------------------------------------------------ #
@@ -497,6 +579,7 @@ writeLines(output_lines, output_file)
 # Append the data frame
 suppressWarnings(write.table(chromosome_CAP_data, file = output_file, append = TRUE, sep = "\t", row.names = FALSE, quote = FALSE))
 
-
+# save the data
+saveRDS(plot_data, file = file.path(paste0(assembly_name, "_CAP_Rdata.rds")))
 
 

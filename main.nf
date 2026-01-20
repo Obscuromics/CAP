@@ -254,6 +254,7 @@ process CAP {
     path "${assembly.baseName}_CAP_plot_*.png"
     path "${assembly.baseName}_CAP_repeat_families.csv"
     path "${assembly.baseName}_CAP_model.txt"
+    path "${assembly.baseName}_CAP_Rdata.rds"
 	
     script:
     """
