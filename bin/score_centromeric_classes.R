@@ -50,6 +50,8 @@ if (!no_heli) genes <- read.csv(genes_filtered_csv)
 
 if(length(edta) == 0) no_edta <- TRUE
 if(length(genes) == 0) no_heli <- TRUE
+if(nrow(edta) == 0) no_edta <- TRUE
+if(nrow(genes) == 0) no_heli <- TRUE
 
 
 # Score
