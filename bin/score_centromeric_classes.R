@@ -48,6 +48,9 @@ if (!no_edta) edta <- read.csv(tes_filtered_csv)
 # print("load genes")
 if (!no_heli) genes <- read.csv(genes_filtered_csv)
 
+if(length(edta) == 0) no_edta <- TRUE
+if(length(genes) == 0) no_heli <- TRUE
+
 
 # Score
 all_scores <- data.frame()

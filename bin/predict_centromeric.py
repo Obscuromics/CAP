@@ -4,6 +4,11 @@ import joblib
 import os
 import numpy as np
 import sys
+import warnings
+
+# Suppress version compatibility warnings (they're non-fatal but noisy)
+warnings.filterwarnings('ignore', category=UserWarning)
+warnings.filterwarnings('ignore', category=FutureWarning)
 
 # ───────────────────────────────────────────────
 # Inputs from command line arguments
@@ -21,15 +26,19 @@ output_csv = sys.argv[3]
 if not os.path.exists(model_path):
     sys.exit(f"❌ Model file not found: {model_path}")
 
-artifacts = joblib.load(model_path)
-best_model = artifacts['model']
-scaler = artifacts['scaler']
-selector = artifacts['selector']
-selected_features = artifacts['selected_features']
-numerical_cols = artifacts['numerical_cols']
-
-print(f"✅ Loaded model from {model_path}")
-print(f"Using {len(selected_features)} selected features.")
+try:
+    artifacts = joblib.load(model_path)
+    best_model = artifacts['model']
+    scaler = artifacts['scaler']
+    selector = artifacts['selector']
+    selected_features = artifacts['selected_features']
+    numerical_cols = artifacts['numerical_cols']
+    print(f"✅ Loaded model from {model_path}")
+    print(f"Using {len(selected_features)} selected features.")
+except Exception as e:
+    sys.exit(f"❌ Error loading model: {e}\n"
+             f"   The model may be incompatible with current XGBoost/scikit-learn versions.\n"
+             f"   Please regenerate the model with current package versions.")
 
 # ───────────────────────────────────────────────
 # Load new genomic class data
@@ -38,8 +47,14 @@ if not os.path.exists(input_csv):
     sys.exit(f"❌ Input data file not found: {input_csv}")
 
 new_data = pd.read_csv(input_csv, na_values=['NA', ''], keep_default_na=True, low_memory=False)
-new_data = new_data.replace(-1, np.nan)
 print(f"📄 Loaded {len(new_data)} rows from {input_csv}")
+
+# Check for empty data
+if len(new_data) == 0:
+    sys.exit(f"❌ Input CSV is empty: {input_csv}\n"
+             f"   Please check that SCORE_CENTROMERIC process produced valid output.")
+
+new_data = new_data.replace(-1, np.nan)
 
 # ───────────────────────────────────────────────
 # Preprocess (match training pipeline)
