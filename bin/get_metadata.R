@@ -31,7 +31,7 @@ if (!is.null(metadata_file)) {
 
   assembly.name <- basename(assembly_fasta)
 
-  metadata_data <- subset(metadata_data, assembly.name == assembly.name)
+  metadata_data <- metadata_data[metadata_data$assembly.name == assembly.name, ]
 
 } else {
   # Generate metadata from assembly
