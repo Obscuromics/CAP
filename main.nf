@@ -72,11 +72,10 @@ process GET_METADATA {
 	publishDir "${params.outdir}", mode: 'copy'
     input:
     path assembly
-    path metadata_file
     output:
     path "${assembly.baseName}_metadata.csv"
     script:
-    def metadata_arg = metadata_file.name != 'NO_FILE' ? "-m ${metadata_file}" : ''
+    def metadata_arg = params.metadata ? "-m ${params.metadata}" : ''
     """
     Rscript ${workflow.projectDir}/bin/get_metadata.R ${assembly} ${assembly.baseName}_metadata.csv ${metadata_arg}
     """
@@ -378,7 +377,9 @@ See README.md for full details: https://github.com/vlothec/CAP
     // extract arrays_filtered file from the tuple emitted by FILTER_TRASH
     arrays_ch = filtered.map { repeats, arrays -> arrays }
 
-    metadata = GET_METADATA(assembly_ch, metadata_ch)
+    // ---- Metadata ----
+    metadata = GET_METADATA(assembly_ch)
+    
 
     // ---- Optional TEs ----
     if (params.te_gff) {
