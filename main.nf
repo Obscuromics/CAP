@@ -8,6 +8,7 @@ params.assembly = null
 params.templates = null
 params.te_gff = null
 params.gene_gff = null
+params.metadata = null
 params.cores = 1
 params.max_rep_size = 200
 params.outdir = "./results"
@@ -71,11 +72,13 @@ process GET_METADATA {
 	publishDir "${params.outdir}", mode: 'copy'
     input:
     path assembly
+    path metadata_file
     output:
     path "${assembly.baseName}_metadata.csv"
     script:
+    def metadata_arg = metadata_file.name != 'NO_FILE' ? "-m ${metadata_file}" : ''
     """
-    Rscript ${workflow.projectDir}/bin/get_metadata.R ${assembly} ${assembly.baseName}_metadata.csv
+    Rscript ${workflow.projectDir}/bin/get_metadata.R ${assembly} ${assembly.baseName}_metadata.csv ${metadata_arg}
     """
 }
 
@@ -342,6 +345,7 @@ See README.md for full details: https://github.com/vlothec/CAP
     // Input channels
     assembly_ch = channel.fromPath(params.assembly, checkIfExists: true)
     //templates_ch = params.templates ? channel.fromPath(params.templates) : channel.value(null)
+    metadata_ch = params.metadata ? channel.fromPath(params.metadata) : channel.value(null)
     te_gff_ch = params.te_gff ? channel.fromPath(params.te_gff) : channel.value(null)
     gene_gff_ch = params.gene_gff ? channel.fromPath(params.gene_gff) : channel.value(null)
 
@@ -374,7 +378,7 @@ See README.md for full details: https://github.com/vlothec/CAP
     // extract arrays_filtered file from the tuple emitted by FILTER_TRASH
     arrays_ch = filtered.map { repeats, arrays -> arrays }
 
-    metadata = GET_METADATA(assembly_ch)
+    metadata = GET_METADATA(assembly_ch, metadata_ch)
 
     // ---- Optional TEs ----
     if (params.te_gff) {

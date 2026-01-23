@@ -68,12 +68,10 @@ if (is_bed) {
 metadata <- read.csv(metadata_csv)
 
 # Rename TE seqID if needed
-metadata$new_chr_name <- ""
-metadata$shortened_chr_name = ""
-for (i in seq_along(unique(metadata$chromosome))) {
-  metadata$new_chr_name[metadata$chromosome == unique(metadata$chromosome)[i]] <- paste0("Chr", i)
-  metadata$shortened_chr_name[metadata$chromosome == unique(metadata$chromosome)[i]] <- strsplit(unique(metadata$chromosome)[i], split = " ")[[1]][1]
-  te_raw_data$seqID[te_raw_data$seqID == paste0("Chr", i)] <- strsplit(unique(metadata$chromosome)[i], split = " ")[[1]][1]
+if(metadata$chromosome[1] != metadata$alternative_name[1]) {
+  for (i in seq_along(metadata$chromosome)) {
+    te_raw_data$seqID[te_raw_data$seqID == metadata$alternative_name[i]] <- metadata$chromosome[i]
+  }
 }
 
 # Parse attributes and reformat data

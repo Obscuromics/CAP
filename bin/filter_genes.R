@@ -34,8 +34,8 @@ str(genes_data)
 str(arrays_filtered)
 str(metadata)
 
-chromosomes <- metadata$chromosome.name
-chromosomes_lengths <- metadata$size
+chromosomes <- metadata$chromosome.name[metadata$is.chr == 1]
+chromosomes_lengths <- metadata$size[metadata$is.chr == 1]
 
 genes_filtered_total <- data.frame()
 arrays_filtered$overlapping_bp <- 0
