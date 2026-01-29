@@ -44,7 +44,7 @@ calculate_closest_dist_in_win = function(windows.starts, windows.ends, sequence,
   return(unlist(lapply(seq_along(adjusted_window_starts), function(X) calc_closest_dist_in_a_win(sequence[adjusted_window_starts[X] : adjusted_windows.ends[X]]))))
 }
 
-calculate.repeats.percentage.in.windows = function(windows.starts, repeat.starts, repeat.lengths, sequence.length = 0)
+calculate.repeats.percentage.in.windows = function(windows.starts, repeat.starts, repeat.lengths, sequence.length = 0, unique_coords = FALSE)
 {
   # if(sequence.length < windows.starts[length(windows.starts)]) print("calculate.repeats.percentage.in.windows: sequence length is shorter than last window")
   # if(sequence.length < max(repeat.starts)) print("calculate.repeats.percentage.in.windows: sequence length is shorter than last repeat start")
@@ -59,7 +59,12 @@ calculate.repeats.percentage.in.windows = function(windows.starts, repeat.starts
   repeat.lengths = repeat.lengths[repeat.starts < sequence.length]
   repeat.starts = repeat.starts[repeat.starts < sequence.length]
   
-  hist.data = hist(rep(repeat.starts, repeat.lengths), breaks = bins.breaks, plot = F)
+  if(unique_coords) {
+    all_coords <- unlist(mapply(function(start, length) start:(start + length - 1), repeat.starts, repeat.lengths))
+    hist.data = hist(unique(all_coords), breaks = bins.breaks, plot = F)
+  } else {
+    hist.data = hist(rep(repeat.starts, repeat.lengths), breaks = bins.breaks, plot = F)
+  }
   
   return(100 * hist.data$counts / (bins.breaks[2:length(bins.breaks)] - bins.breaks[1:(length(bins.breaks) - 1)]))
 }

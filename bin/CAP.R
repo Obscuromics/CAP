@@ -23,6 +23,8 @@ tes_filtered_csv <- if (args[9] != "NO_FILE") args[9] else no_edta <- TRUE
 genes_filtered_csv <- if (args[10] != "NO_FILE") args[10] else no_heli <- TRUE
 scores_csv <- basename(args[11]) # scores per class per chromosome
 
+kmer_data_files <- list.files(path = "/home/pwlodzimierz/ToL/kmer_profiles", full.names = T)
+
 
 # Load libraries
 suppressMessages({
@@ -100,53 +102,59 @@ if (!no_edta) {
   edta$start[edta$start == 0] <- 1
 }
 
+
+# ------------------------------------------------------------------ #
+
 ####
 edta_classes <- list(
   # class I (retrotransposons)
   ## LTR retrotransposons
   c("Gypsy_LTR_retrotransposon"),
   c("Copia_LTR_retrotransposon"),
-  c("Bel_Pao_LTR_retrotransposon"),
-  c("TRIM_LTR_retrotransposon"),
-  c("Caulimoviridae"),
-  c("Retrovirus", "LTR_retrotransposon", "long_terminal_repeat"),
+  c("Bel_Pao_LTR_retrotransposon", "TRIM_LTR_retrotransposon", "Caulimoviridae", "pararetrovirus"),
+  c("Retrovirus", "LTR_retrotransposon", "long_terminal_repeat", 
+    "Retrovirus_LTR_retrotransposon", "Endogenous_Retrovirus_LTR_retrotransposon"),
   ## Non-LTR retrotransposons
-  c("LINE_element"),
-  c("SINE_element"),
-  c("Penelope_retrotransposon"),
-  c("DIRS_YR_retrotransposon"),
+  c("LINE_element", "L1_LINE_retrotransposon", "RTE_LINE_retrotransposon", "Jockey_LINE_retrotransposon", "L2_LINE_retrotransposon", "R1_LINE_retrotransposon", 
+    "CR1_LINE_retrotransposon", "I_LINE_retrotransposon", "Rex_LINE_retrotransposon", "Proto2_LINE_retrotransposon", "R2_LINE_retrotransposon", "Tad1_LINE_retrotransposon", "R4_LINE_retrotransposon"),
+  c("SINE_element", "tRNA_SINE_retrotransposon", "5S_SINE_retrotransposon", "MIR_SINE_retrotransposon", "Alu_SINE_retrotransposon"),
+  c("Penelope_retrotransposon", "DIRS_YR_retrotransposon"),
   c("non_LTR_retrotransposon"),
   # class II (DNA transposons)
   ## TIRs
-  c("Kolobok_TIR_transposon" , "Ginger_TIR_transposon", "Academ_TIR_transposon", "Novosib_TIR_transposon", "Sola_TIR_transposon", "Merlin_TIR_transposon", "IS3EU_TIR_transposon", "PiggyBac_TIR_transposon", "hAT_TIR_transposon", "Mutator_TIR_transposon", "Tc1_Mariner_TIR_transposon", "Dada_TIR_transposon", "CACTA_TIR_transposon", "Zisupton_TIR_transposon", "PIF_Harbinger_TIR_transposon"),
+  c("Kolobok_TIR_transposon" , "Ginger_TIR_transposon", "Academ_TIR_transposon", 
+    "Novosib_TIR_transposon", "Sola_TIR_transposon", "Merlin_TIR_transposon", 
+    "IS3EU_TIR_transposon", "PiggyBac_TIR_transposon", "hAT_TIR_transposon", 
+    "Mutator_TIR_transposon", "Tc1_Mariner_TIR_transposon", "Dada_TIR_transposon", 
+    "CACTA_TIR_transposon", "Zisupton_TIR_transposon", "PIF_Harbinger_TIR_transposon", 
+    "P_TIR_transposon", "Transib_TIR_transposon", "PILE_TIR_transposon",
+    "POLE_TIR_transposon", "Zator_TIR_transposon"),
   ## other class II
-  c("DNA_transposon"),
-  c("helitron"),
-  c("MITE"),
+  c("DNA_transposon", "helitron", "MITE"),
   c("Maverick_Polinton", "polinton"),
   # other, recombinase element based
-  c("Tyrosine_Recombinase_Elements", "Crypton_Tyrosine_Recombinase"),
+  c("Tyrosine_Recombinase_Elements", "Crypton_Tyrosine_Recombinase", "Crypton_YR_transposon", "Ngaro_YR_retrotransposon"),
   # others
   c("TE", "TE_unclass"),
   # likely not TEs, remove for plotting?
-  c("repeat_region", "SUPER", "Sequence_Ontology", "rRNA_gene", "target_site_duplication", "chr"))
+  c("repeat_region", "SUPER", "Sequence_Ontology", "rRNA_gene", "target_site_duplication", "chr", "snRNA", "repeat_fragment"))
 edta_classes_colours <-  c(
   "#E31A1C",  # red
   "#D55E00",  # reddish-orange
   "#F5793A",  # bright orange
-  "#FF7F00",  # orange
-  "#FDBF6F",  # peach
+  # "#FF7F00",  # orange
+  # "#FDBF6F",  # peach
   "#F0E442",  # yellow
-  "#6A3D9A",  # dark purple
+  # "#6A3D9A",  # dark purple
   "#A95AA1",  # purple
   "#CC79A7",  # pink
   "#DDA0DD",  # light pinkish purple (plum)
   "#CAB2D6",  # lavender
   "#1F78B4",  # blue
   "#B2DF8A",  # light green
-  "#33A02C",  # green
+  # "#33A02C",  # green
   "#009E73",  # teal green
-  "#56B4E9",  # light blue
+  # "#56B4E9",  # light blue
   "#7F7F7F",  # grey
   "#000000",   # black
   "#000000"   # black
@@ -233,6 +241,14 @@ for(k in 1 : length(chromosomes_sets)) {
   
   chromosomes <- chromosomes_sets[[k]]
   chromosomes_len <- chromosomes_len_sets[[k]]
+
+  # get kmer data if available
+  add_kmers <- FALSE
+  kmers_data <- data.frame()
+  if(sum(grepl(assembly_name, kmer_data_files))) {
+    add_kmers <- TRUE
+    kmers_data <- read.table(file = kmer_data_files[grep(assembly_name, kmer_data_files)], header = T, sep = "")
+  }
   
   # ------------------------------------------------------------------ #
   #  PLOT SETUP
@@ -264,41 +280,36 @@ for(k in 1 : length(chromosomes_sets)) {
   text(1,55, sprintf("Chromosomes: %d", length(chromosomes)), pos=4, cex = cex_factor*3)
   text(1,40, sprintf("Transposable elements legend:"), pos=4, cex = cex_factor*2)
   
-  text(x = c(1,15,30,45,60,75,90), y = 32, 
+  text(x = c(1,15,30,45,75), y = 32, 
        labels =  c("class I LTR: ",
                    "Gypsy",
                    "Copia",
-                   "Bel Pao",
-                   "TRIM",
-                   "Caulimoviridae", 
+                   "Bel Pao;TRIM;Caulimoviridae",
                    "unspecified"), 
-       col = c("black", edta_classes_colours[1:6]),
+       col = c("black", edta_classes_colours[1:4]),
        pos = 4, cex = cex_factor* 1.5)
-  text(x = c(1,15,30,45,60,75), y = 26, 
+  text(x = c(1,15,30,45,75), y = 26, 
        labels = c("class I non-LTR: ", 
                   "LINE",
                   "SINE",
-                  "Penelope",
-                  "DIRS YR",
+                  "Penelope;DIRS YR",
                   "unspecified"),
-       col = c("black", edta_classes_colours[7:11]),
+       col = c("black", edta_classes_colours[5:8]),
        pos = 4, cex = cex_factor* 1.5)
   text(x = c(1,15), y = 20, 
        labels = c("class II TIRs: ", "Kolobok;Ginger;Academ;Novosib;Sola;Merlin;IS3EU;PiggyBac;hAT;Mutator;Tc1 Mariner;Dada;CACTA;Zisupton;PIF Harbinger"),
-       col = c("black", edta_classes_colours[12]), 
+       col = c("black", edta_classes_colours[9]), 
        pos = 4, cex = cex_factor* 1.5)
-  text(x = c(1,15,30,45,60), y = 14, 
+  text(x = c(1,15,45), y = 14, 
        labels = c("class II others: ",  
-                  "DNA_transposon",
-                  "helitron",
-                  "MITE",
+                  "DNA_transposon;helitron;MITE",
                   "Maverick Polinton"),
-       col = c("black", edta_classes_colours[13:16]), 
+       col = c("black", edta_classes_colours[10:11]), 
        pos = 4, cex = cex_factor* 1.5)
   text(x = c(1,15,30), y = 8, 
        labels = c("other: ", "Tyrosine Recombinase",
                   "unspecified"),
-       col = c("black", edta_classes_colours[17:18]), 
+       col = c("black", edta_classes_colours[12:13]), 
        pos = 4, cex = cex_factor* 1.5)
   
   # ------------------------------------------------------------------ #
@@ -359,7 +370,7 @@ for(k in 1 : length(chromosomes_sets)) {
     # === PLOT A: Repeats + GC + families ===
     win_rep <- genomic.bins.starts(1, len, bin.size = bin_rep)
     rep_cov <- if (nrow(rep_chr)) {
-      calculate.repeats.percentage.in.windows(win_rep, rep_chr$start, rep_chr$width, len)
+      calculate.repeats.percentage.in.windows(win_rep, rep_chr$start, rep_chr$width, len, unique_coords = TRUE)
     } else rep(0, length(win_rep))
     rep_cov[rep_cov == 0] <- NA; rep_cov[rep_cov > 100] <- 100
     
@@ -367,9 +378,14 @@ for(k in 1 : length(chromosomes_sets)) {
     chr_density_data$rep_coverage_windows <- win_rep
     chr_density_data$rep_coverage_values <- rep_cov
     
-    plot(win_rep, rep_cov, type="h", col="#CCCCCC", ylim=c(0,100), xaxt="n", yaxt="n", xlab="", ylab="")
+    plot(NA, NA, col="#CCCCCC", ylim=c(0,100), xaxt="n", yaxt="n", xlab="", ylab="", xlim = c(0,len))
     mtext("REP%         per 10 Kbp", side = 2, line = 0, col = "grey", cex = cex_factor* 0.5, at = 10, adj = 0)
     axis(side = 2, labels = c("0","100"), at = c(0,100))
+
+    
+    for(window_plot in seq_along(win_edta)) {
+      rect(xleft = win_rep[window_plot], ybottom = 0, xright = win_rep[window_plot] + bin_rep, ytop = edt_cov[window_plot], col = "grey", border = NA)
+    }
     
     # GC (TODO only if requested)
     gc_chs_data <- gc_data[gc_data$chromosome == chr,]
@@ -397,7 +413,7 @@ for(k in 1 : length(chromosomes_sets)) {
         if (!nrow(fam)) next
         fam <- fam[fam$start > 0,]
         fam <- fam[fam$end <= len,]
-        cov <- calculate.repeats.percentage.in.windows(win_rep, fam$start, fam$width, len)
+        cov <- calculate.repeats.percentage.in.windows(win_rep, fam$start, fam$width, len, unique_coords = TRUE)
         cov[cov == 0] <- NA; cov[cov > 100] <- 100
         # Save family coverage
         chr_density_data$family_coverage[[classes_to_plot[m]]] <- cov
@@ -413,7 +429,7 @@ for(k in 1 : length(chromosomes_sets)) {
     edt_chr <- edt_chr[edt_chr$start > 0,]
     edt_chr <- edt_chr[edt_chr$end <= len,]
     edt_cov <- if (!no_edta && nrow(edt_chr)) {
-      calculate.repeats.percentage.in.windows(win_edta, edt_chr$start, edt_chr$width, len)
+      calculate.repeats.percentage.in.windows(win_edta, edt_chr$start, edt_chr$width, len, unique_coords = TRUE)
     } else rep(0, length(win_edta))
     edt_cov[edt_cov == 0] <- NA; edt_cov[edt_cov > 100] <- 100
     
@@ -421,10 +437,46 @@ for(k in 1 : length(chromosomes_sets)) {
     chr_density_data$edta_coverage_windows <- win_edta + bin_edta/2
     chr_density_data$edta_coverage_values <- edt_cov
     
-    plot(win_edta + bin_edta/2, edt_cov, type="h", col="#CCCCCC", ylim=c(0,100), xaxt="n", yaxt="n", xlab="", ylab="")
+    plot(NA, NA, type="h", col="#CCCCCC", ylim=c(0,100), xaxt="n", yaxt="n", xlab="", ylab="", xlim = c(0,len))
     mtext("EDTA%           per 100 Kbp", side = 2, line = 0, col = "grey", cex = cex_factor* 0.5, at = 10, adj = 0)
     axis(2, col="grey", at = c(0,100), labels = c("0", "100"))
     
+    # add kmer profile background if available
+    if(add_kmers) {
+      kmers_data_chr <- kmers_data[kmers_data$seqid_or_ == chr,]
+      
+      kmers_data_chr$bin_start <- kmers_data_chr$dist_start_ * kmers_data_chr$binwidth_
+      kmers_data_chr$bin_mid <- kmers_data_chr$bin_start + kmers_data_chr$binwidth_/2
+      kmers_data_chr$bin_end <- kmers_data_chr$bin_start + kmers_data_chr$binwidth_
+      
+      kmers_data_1 <- kmers_data_chr[kmers_data_chr$cutoff_ == 1,]
+      kmers_data_25 <- kmers_data_chr[kmers_data_chr$cutoff_ == 25,]
+      kmers_data_50 <- kmers_data_chr[kmers_data_chr$cutoff_ == 50,]
+      kmers_data_75 <- kmers_data_chr[kmers_data_chr$cutoff_ == 75,]
+      kmers_data_90 <- kmers_data_chr[kmers_data_chr$cutoff_ == 90,]
+      
+      kmers_data_averaged <- unlist(lapply(1 : nrow(kmers_data_1), function(X) mean(c(kmers_data_1$occupancy_freq_[X],
+                                                                                      kmers_data_25$occupancy_freq_[X],
+                                                                                      kmers_data_50$occupancy_freq_[X],
+                                                                                      kmers_data_75$occupancy_freq_[X],
+                                                                                      kmers_data_90$occupancy_freq_[X]))   ))
+      kmers_data_averaged_100kb <- (kmers_data_averaged[1 : (length(kmers_data_averaged) - 1)] + kmers_data_averaged[2 : length(kmers_data_averaged)]) / 2
+      kmers_data_averaged_100kb <- kmers_data_averaged_100kb[seq(1, length(kmers_data_averaged_100kb), by = 2)]
+      kmers_data_averaged_100kb <- c(kmers_data_averaged_100kb, kmers_data_averaged[length(kmers_data_averaged)])
+      
+      color_func <- colorRamp(c("white", "yellow", "orange", "red"))
+      rgb_vals <- color_func(kmers_data_averaged_100kb)
+      colors <- rgb(rgb_vals[,1], rgb_vals[,2], rgb_vals[,3], maxColorValue = 255, alpha = 150)
+      
+      
+      for(window_plot in seq_along(win_edta)) {
+        rect(xleft = win_edta[window_plot] - 50000, ybottom = 0, xright = win_edta[window_plot] + 50000, ytop = 100, col = colors[window_plot], border = NA)
+      }
+    }
+    for(window_plot in seq_along(win_edta)) {
+      rect(xleft = win_edta[window_plot] - 50000, ybottom = 0, xright = win_edta[window_plot] + 50000, ytop = edt_cov[window_plot], col = "#CCCCCC", border = NA)
+    }
+
     # EDTA classes
     if (!no_edta && nrow(edt_chr)) {
       for (m in rev(seq_along(edta_classes))) {
@@ -432,7 +484,7 @@ for(k in 1 : length(chromosomes_sets)) {
         cls <- cls[cls$start > 0,]
         cls <- cls[cls$end <= len,]
         if (!nrow(cls)) next
-        cov <- calculate.repeats.percentage.in.windows(win_edta, cls$end, cls$width, len)
+        cov <- calculate.repeats.percentage.in.windows(win_edta, cls$end, cls$width, len, unique_coords = TRUE)
         cov[cov == 0] <- NA; cov[cov > 100] <- 100
         # Save EDTA family coverage
         chr_density_data$edta_family_coverage[[m]] <- list(class_index = m, values = cov)
@@ -447,6 +499,7 @@ for(k in 1 : length(chromosomes_sets)) {
     if (nrow(rep_chr))          te_coords <- c(te_coords, unlist(mapply(`:`, rep_chr$start, rep_chr$end)))
     if (length(te_coords) > 0) {
       te_coords <- te_coords[te_coords <= len & te_coords >= 1]
+      te_coords <- unique(te_coords)
       if (length(te_coords) > 0) {
         te_hist <- hist(te_coords, breaks = seq(0, len, length.out = bin_gene), plot = FALSE)
         # Only apply moving average if there are enough data points (need at least 5 for padding)
@@ -459,7 +512,8 @@ for(k in 1 : length(chromosomes_sets)) {
           par(new = TRUE)
           max_te_ma <- max(te_ma, na.rm = TRUE)
           if (is.finite(max_te_ma) && max_te_ma > 0) {
-            plot(te_hist$mids, te_ma, type="b", col="#0066aa", lwd=4, ylim=c(0, max_te_ma), yaxt="n", xlab="", ylab="")
+            plot(te_hist$mids, te_ma, type="b", col="#0066aa", lwd=4, ylim=c(0, 100), yaxt="n", xlab="", ylab="")
+            # plot(te_hist$mids, te_ma, type="b", col="#0066aa", lwd=4, ylim=c(0, max_te_ma), yaxt="n", xlab="", ylab="")
             axis(4, col="#0066aa", line = 0, col.axis = "#0066aa")
             mtext("      TE+REP dens per 100 Kbp", side = 2, line = 2, col = "#0066aa", cex = cex_factor* 0.5, at = 20, adj = 0)
           }
@@ -483,6 +537,7 @@ for(k in 1 : length(chromosomes_sets)) {
     if (!no_heli && nrow(gen_chr)) {
       gen_coords <- unlist(mapply(`:`, gen_chr$start, gen_chr$end))
       gen_coords <- gen_coords[gen_coords <= len & gen_coords >= 1]
+      gen_coords <- unique(gen_coords)
       if (length(gen_coords) > 0) {
         gen_hist <- hist(gen_coords, breaks = seq(0, len, length.out = bin_gene), plot = FALSE)
         # Only apply moving average if there are enough data points (need at least 5 for padding)
@@ -495,7 +550,8 @@ for(k in 1 : length(chromosomes_sets)) {
           par(new = TRUE)
           max_gen_ma <- max(gen_ma, na.rm = TRUE)
           if (is.finite(max_gen_ma) && max_gen_ma > 0) {
-            plot(gen_hist$mids, gen_ma, type="b", col="#00bb33", lwd=4, ylim=c(0, max_gen_ma), yaxt="n", xlab="", ylab="")
+            plot(gen_hist$mids, gen_ma, type="b", col="#00bb33", lwd=4, ylim=c(0, 100), yaxt="n", xlab="", ylab="")
+            # plot(gen_hist$mids, gen_ma, type="b", col="#00bb33", lwd=4, ylim=c(0, max_gen_ma), yaxt="n", xlab="", ylab="")
             axis(4, col="#00bb33", line = 2, col.axis = "#00bb33")
             mtext("      GENE dens     per 100 Kbp", side = 2, line = 3, col = "#00bb33", cex = cex_factor* 0.5, at = 10, adj = 0)
           }

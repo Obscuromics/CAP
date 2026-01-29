@@ -68,9 +68,21 @@ if (is_bed) {
 metadata <- read.csv(metadata_csv)
 
 # Rename TE seqID if needed
-if(metadata$chromosome[1] != metadata$alternative_name[1]) {
-  for (i in seq_along(metadata$chromosome)) {
-    te_raw_data$seqID[te_raw_data$seqID == metadata$alternative_name[i]] <- metadata$chromosome[i]
+if(!all(unique(te_raw_data$seqID) %in% metadata$chromosome)) {
+  if("alternative_name" %in% colnames(metadata)) {
+    if(metadata$alternative_name[1] != 0) {
+      if(metadata$chromosome[1] != metadata$alternative_name[1]) {
+        # make sure the alternative is accurate
+        if(!all(unique(te_raw_data$seqID) %in% metadata$alternative_name)) {
+          print("Gene seqIDs do not match metadata alternative names.")
+          for(i in seq_along(unique(te_raw_data$seqID))) {
+            te_raw_data$seqID[te_raw_data$seqID == unique(te_raw_data$seqID)[i]] <- metadata$chromosome[i]
+          }
+        } else for (i in seq_along(metadata$chromosome)) {
+          te_raw_data$seqID[te_raw_data$seqID == metadata$alternative_name[i]] <- metadata$chromosome[i]
+        }
+      }
+    }
   }
 }
 
