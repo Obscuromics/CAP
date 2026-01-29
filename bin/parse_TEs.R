@@ -112,18 +112,22 @@ edta_non_rep_reg = edta_full[edta_full$type != "repeat_region", ]
 names = unique(edta_repeat_region$name)
 names = sort(names)
 
-names = data.frame(names)
-names$short = unlist(lapply(names$names, function(X) {
-  pos = grep("[^A-Za-z]", strsplit(X, split = "")[[1]])
-  if(length(pos) == 0 ) return(X)
-  return(substr(X, 1, min(pos) - 1))
-  } ))
+if(length(names) > 0) {
+  names = data.frame(names)
+  names$short = unlist(lapply(names$names, function(X) {
+    pos = grep("[^A-Za-z]", strsplit(X, split = "")[[1]])
+    if(length(pos) == 0 ) return(X)
+    return(substr(X, 1, min(pos) - 1))
+    } ))
 
-names_short = unique(names$short)
+  names_short = unique(names$short)
 
-edta_repeat_region$old_type = edta_repeat_region$type
-idx <- match(edta_repeat_region$name, names$names)
-edta_repeat_region$type <- ifelse(is.na(idx), edta_repeat_region$type, names$short[idx])
+  edta_repeat_region$old_type = edta_repeat_region$type
+  idx <- match(edta_repeat_region$name, names$names)
+  edta_repeat_region$type <- ifelse(is.na(idx), edta_repeat_region$type, names$short[idx])
+}
+
+
 
 edta_modified = rbind(edta_non_rep_reg, edta_repeat_region)
 cat("edta format after modification:\n")
