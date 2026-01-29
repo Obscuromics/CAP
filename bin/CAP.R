@@ -383,7 +383,7 @@ for(k in 1 : length(chromosomes_sets)) {
     axis(side = 2, labels = c("0","100"), at = c(0,100))
 
     
-    for(window_plot in seq_along(win_edta)) {
+    for(window_plot in seq_along(win_rep)) {
       rect(xleft = win_rep[window_plot], ybottom = 0, xright = win_rep[window_plot] + bin_rep, ytop = edt_cov[window_plot], col = "grey", border = NA)
     }
     
