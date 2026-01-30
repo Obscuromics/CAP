@@ -410,9 +410,10 @@ for(k in 1 : length(chromosomes_sets)) {
     if (length(classes_to_plot)) {
       for (m in seq_len(length(classes_to_plot))) {
         fam <- subset(rep_chr, new_class == classes_to_plot[m])
-        if (!nrow(fam)) next
+        if (nrow(fam) == 0) next
         fam <- fam[fam$start > 0,]
         fam <- fam[fam$end <= len,]
+        if(nrow(fam) == 0) next
         cov <- calculate.repeats.percentage.in.windows(win_rep, fam$start, fam$width, len, unique_coords = TRUE)
         cov[cov == 0] <- NA; cov[cov > 100] <- 100
         # Save family coverage
@@ -428,7 +429,7 @@ for(k in 1 : length(chromosomes_sets)) {
     win_edta <- genomic.bins.starts(1, len, bin.size = bin_edta)
     edt_chr <- edt_chr[edt_chr$start > 0,]
     edt_chr <- edt_chr[edt_chr$end <= len,]
-    edt_cov <- if (!no_edta && nrow(edt_chr)) {
+    edt_cov <- if (!no_edta && nrow(edt_chr) > 0) {
       calculate.repeats.percentage.in.windows(win_edta, edt_chr$start, edt_chr$width, len, unique_coords = TRUE)
     } else rep(0, length(win_edta))
     edt_cov[edt_cov == 0] <- NA; edt_cov[edt_cov > 100] <- 100
