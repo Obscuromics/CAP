@@ -379,7 +379,7 @@ for(k in 1 : length(chromosomes_sets)) {
     chr_density_data$rep_coverage_values <- rep_cov
     
     plot(NA, NA, col="#CCCCCC", ylim=c(0,100), xaxt="n", yaxt="n", xlab="", ylab="", xlim = c(0,len))
-    mtext("REP%         per 10 Kbp", side = 2, line = 0, col = "grey", cex = cex_factor* 0.5, at = 10, adj = 0)
+    mtext("REP% per 10 Kbp", side = 2, line = 0, col = "grey", cex = cex_factor* 0.5, at = 50, adj = 0.5)
     axis(side = 2, labels = c("0","100"), at = c(0,100))
 
     
@@ -393,7 +393,7 @@ for(k in 1 : length(chromosomes_sets)) {
       gc_mids <- gc_chs_data$bin_mid
       gc_vals <- gc_chs_data$bin_value
       lines(gc_mids, gc_vals, type = "l", lwd = 2, cex = cex_factor * 1)
-      mtext("GC%            per  2 Kbp", side = 2, line = 2, col = "black", cex = cex_factor* 0.5, at = 10, adj = 0)
+      mtext("GC% per  2 Kbp", side = 2, line = 2, col = "black", cex = cex_factor* 0.5, at = 50, adj = 0.5)
     }
     
     # CTW (TODO only if requested)
@@ -402,7 +402,7 @@ for(k in 1 : length(chromosomes_sets)) {
       ctw_mids <- ctw_chs_data$bin_mid
       ctw_vals <- ctw_chs_data$bin_value
       lines(x = ctw_mids, ctw_vals, type = "l", col = "#FFA500", lwd = 2, cex = cex_factor * 1)
-      mtext("CTW            per  2 Kbp D10", side = 2, line = 3, col = "#FFA500", cex = cex_factor* 0.5, at = 10, adj = 0)
+      mtext("CTW per  2 Kbp D10", side = 2, line = 3, col = "#FFA500", cex = cex_factor* 0.5, at = 50, adj = 0.5)
     }
     
     
@@ -419,7 +419,7 @@ for(k in 1 : length(chromosomes_sets)) {
         chr_density_data$family_coverage[[classes_to_plot[m]]] <- cov
         lines(win_rep, cov, col = palette[m], pch=16, type="o", lwd = 2, cex = cex_factor * 1)
       }
-      mtext("SIG REP% per 10 Kbp", side = 2, line = 1, col = "#88CCEE", cex = cex_factor* 0.5, at = 10, adj = 0)
+      mtext("SIG REP% per 10 Kbp", side = 2, line = 1, col = "#88CCEE", cex = cex_factor* 0.5, at = 50, adj = 0.5)
     }
     axis(1, at = seq(0, len, by = x_tick), labels = FALSE)
     # text(1, bin_rep, chr, pos = 4)
@@ -438,7 +438,7 @@ for(k in 1 : length(chromosomes_sets)) {
     chr_density_data$edta_coverage_values <- edt_cov
     
     plot(NA, NA, type="h", col="#CCCCCC", ylim=c(0,100), xaxt="n", yaxt="n", xlab="", ylab="", xlim = c(0,len))
-    mtext("EDTA%           per 100 Kbp", side = 2, line = 0, col = "grey", cex = cex_factor* 0.5, at = 10, adj = 0)
+    mtext("EDTA% per 100 Kbp", side = 2, line = 0, col = "grey", cex = cex_factor* 0.5, at = 50, adj = 0.5)
     axis(2, col="grey", at = c(0,100), labels = c("0", "100"))
     
     # add kmer profile background if available
@@ -484,13 +484,13 @@ for(k in 1 : length(chromosomes_sets)) {
         cls <- cls[cls$start > 0,]
         cls <- cls[cls$end <= len,]
         if (!nrow(cls)) next
-        cov <- calculate.repeats.percentage.in.windows(win_edta, cls$end, cls$width, len, unique_coords = TRUE)
+        cov <- calculate.repeats.percentage.in.windows(win_edta, cls$start, cls$width, len, unique_coords = TRUE)
         cov[cov == 0] <- NA; cov[cov > 100] <- 100
         # Save EDTA family coverage
         chr_density_data$edta_family_coverage[[m]] <- list(class_index = m, values = cov)
         lines(win_edta + (bin_edta/2), cov, col = edta_classes_colours[m], pch=16, type="o", lwd = 2, cex = cex_factor * 1)
       }
-      mtext("FAM EDTA%  per 100 Kbp", side = 2, line = 1, col = "red", cex = cex_factor* 0.5, at = 10, adj = 0)
+      mtext("FAM EDTA% per 100 Kbp", side = 2, line = 1, col = "red", cex = cex_factor* 0.5, at = 50, adj = 0.5)
     }
     
     # TE+repeat peak
@@ -512,10 +512,11 @@ for(k in 1 : length(chromosomes_sets)) {
           par(new = TRUE)
           max_te_ma <- max(te_ma, na.rm = TRUE)
           if (is.finite(max_te_ma) && max_te_ma > 0) {
-            plot(te_hist$mids, te_ma, type="b", col="#0066aa", lwd=4, ylim=c(0, 100), yaxt="n", xlab="", ylab="")
+            te_ma <- 100 * te_ma / (len/bin_gene)
+            plot(te_hist$mids, te_ma, type="b", col="#0066aa", lwd=4, ylim=c(0, max(te_ma)), yaxt="n", xlab="", ylab="")
             # plot(te_hist$mids, te_ma, type="b", col="#0066aa", lwd=4, ylim=c(0, max_te_ma), yaxt="n", xlab="", ylab="")
             axis(4, col="#0066aa", line = 0, col.axis = "#0066aa")
-            mtext("      TE+REP dens per 100 Kbp", side = 2, line = 2, col = "#0066aa", cex = cex_factor* 0.5, at = 20, adj = 0)
+            mtext("TE+REP dens in 50 bins", side = 2, line = 2, col = "#0066aa", cex = cex_factor* 0.5, at = 50, adj = 0.5)
           }
         }
       }
@@ -529,7 +530,7 @@ for(k in 1 : length(chromosomes_sets)) {
     #     par(new = TRUE)
     #     plot(hic$Bin_Midpoint_BP, hic$Std_Dev_Interchrom_Contacts,
     #          type="b", col="#bb3300", lwd=4, yaxt="n", xlab="", ylab="")
-    #     mtext("      HiC normalised signal", side = 2, line = 4, col = "#bb3300", cex = cex_factor* 0.5, at = 20, adj = 0)
+    #     mtext("      HiC normalised signal", side = 2, line = 4, col = "#bb3300", cex = cex_factor* 0.5, at = 50, adj = 0)
     #   }
     # }
     
@@ -550,10 +551,11 @@ for(k in 1 : length(chromosomes_sets)) {
           par(new = TRUE)
           max_gen_ma <- max(gen_ma, na.rm = TRUE)
           if (is.finite(max_gen_ma) && max_gen_ma > 0) {
-            plot(gen_hist$mids, gen_ma, type="b", col="#00bb33", lwd=4, ylim=c(0, 100), yaxt="n", xlab="", ylab="")
+            gen_ma <- 100 * gen_ma / (len/bin_gene)
+            plot(gen_hist$mids, gen_ma, type="b", col="#00bb33", lwd=4, ylim=c(0, max(gen_ma)), yaxt="n", xlab="", ylab="")
             # plot(gen_hist$mids, gen_ma, type="b", col="#00bb33", lwd=4, ylim=c(0, max_gen_ma), yaxt="n", xlab="", ylab="")
             axis(4, col="#00bb33", line = 2, col.axis = "#00bb33")
-            mtext("      GENE dens     per 100 Kbp", side = 2, line = 3, col = "#00bb33", cex = cex_factor* 0.5, at = 10, adj = 0)
+            mtext("GENE dens in 50 bins", side = 2, line = 3, col = "#00bb33", cex = cex_factor* 0.5, at = max(gen_ma) * 0.5, adj = 0.5)
           }
         }
       }
@@ -637,5 +639,4 @@ suppressWarnings(write.table(chromosome_CAP_data, file = output_file, append = T
 
 # save the data
 saveRDS(plot_data, file = file.path(paste0(assembly_name, "_CAP_Rdata.rds")))
-
-
+# ------------------------------------------------------------------ #
