@@ -517,7 +517,7 @@ for(k in 1 : length(chromosomes_sets)) {
             plot(te_hist$mids, te_ma, type="b", col="#0066aa", lwd=4, ylim=c(0, max(te_ma)), yaxt="n", xlab="", ylab="")
             # plot(te_hist$mids, te_ma, type="b", col="#0066aa", lwd=4, ylim=c(0, max_te_ma), yaxt="n", xlab="", ylab="")
             axis(4, col="#0066aa", line = 0, col.axis = "#0066aa")
-            mtext("TE+REP dens in 50 bins", side = 2, line = 2, col = "#0066aa", cex = cex_factor* 0.5, at = 50, adj = 0.5)
+            mtext("TE+REP dens in 50 bins", side = 2, line = 2, col = "#0066aa", cex = cex_factor* 0.5, at = max(te_ma) * 0.5, adj = 0.5)
           }
         }
       }
