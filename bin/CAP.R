@@ -23,7 +23,7 @@ tes_filtered_csv <- if (args[9] != "NO_FILE") args[9] else no_edta <- TRUE
 genes_filtered_csv <- if (args[10] != "NO_FILE") args[10] else no_heli <- TRUE
 scores_csv <- basename(args[11]) # scores per class per chromosome
 
-kmer_data_files <- list.files(path = "/home/pwlodzimierz/ToL/kmer_profiles", full.names = T)
+kmer_data_files <- list.files(path = "/home/pwlodzimierz/ToL/kmer_profiles", full.names = TRUE)
 
 
 # Load libraries
@@ -97,7 +97,8 @@ if (!no_edta) {
     #                  "Classification","Sequence_ontology","Identity","Method",
     #                  "TSD","TIR","motif","tsd","oldV3","overlapping_bp",
     #                  "width","overlapping_percentage","reassigned")
-    edta$start <- edta$start + 1; edta$end <- edta$end + 1
+    edta$start <- edta$start + 1
+    edta$end <- edta$end + 1
   }
   edta$start[edta$start == 0] <- 1
 }
@@ -235,7 +236,7 @@ suffix <- paste0(
 # ------------------------------------------------------------------ #
 cat("Plotting. plots to complete:", length(chromosomes_sets), "\n")
 
-for(k in 1 : length(chromosomes_sets)) {
+for(k in seq_along(chromosomes_sets)) {
   
   plot_name <- file.path(paste0(assembly_name, "_CAP_plot_", k, "_", suffix, ".png"))
   
@@ -365,7 +366,9 @@ for(k in 1 : length(chromosomes_sets)) {
                                "Sequence similarity %","Width similarity %","Cen probability"),
                    colours = sc$colours,
                    font_size = cex_factor* 1.2)
-    } else plot.new()
+    } else {
+      plot.new()
+    }
     
     # === PLOT A: Repeats + GC + families ===
     win_rep <- genomic.bins.starts(1, len, bin.size = bin_rep)
@@ -456,11 +459,15 @@ for(k in 1 : length(chromosomes_sets)) {
       kmers_data_75 <- kmers_data_chr[kmers_data_chr$cutoff_ == 75,]
       kmers_data_90 <- kmers_data_chr[kmers_data_chr$cutoff_ == 90,]
       
-      kmers_data_averaged <- unlist(lapply(1 : nrow(kmers_data_1), function(X) mean(c(kmers_data_1$occupancy_freq_[X],
-                                                                                      kmers_data_25$occupancy_freq_[X],
-                                                                                      kmers_data_50$occupancy_freq_[X],
-                                                                                      kmers_data_75$occupancy_freq_[X],
-                                                                                      kmers_data_90$occupancy_freq_[X]))   ))
+      kmers_data_averaged <- unlist(lapply(
+        seq_len(nrow(kmers_data_1)),
+        function(X) {
+          mean(c(kmers_data_1$occupancy_freq_[X],
+                 kmers_data_25$occupancy_freq_[X],
+                 kmers_data_50$occupancy_freq_[X],
+                 kmers_data_75$occupancy_freq_[X],
+                 kmers_data_90$occupancy_freq_[X]))
+        }))
       kmers_data_averaged_100kb <- (kmers_data_averaged[1 : (length(kmers_data_averaged) - 1)] + kmers_data_averaged[2 : length(kmers_data_averaged)]) / 2
       kmers_data_averaged_100kb <- kmers_data_averaged_100kb[seq(1, length(kmers_data_averaged_100kb), by = 2)]
       kmers_data_averaged_100kb <- c(kmers_data_averaged_100kb, kmers_data_averaged[length(kmers_data_averaged)])
