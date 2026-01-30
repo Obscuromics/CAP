@@ -384,7 +384,7 @@ for(k in 1 : length(chromosomes_sets)) {
 
     
     for(window_plot in seq_along(win_rep)) {
-      rect(xleft = win_rep[window_plot], ybottom = 0, xright = win_rep[window_plot] + bin_rep, ytop = edt_cov[window_plot], col = "grey", border = NA)
+      rect(xleft = win_rep[window_plot], ybottom = 0, xright = win_rep[window_plot] + bin_rep, ytop = rep_cov[window_plot], col = "grey", border = NA)
     }
     
     # GC (TODO only if requested)
