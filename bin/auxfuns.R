@@ -297,21 +297,18 @@ calculate.repeats.percentage.in.windows = function(windows.starts, repeat.starts
   if(sequence.length < windows.starts[length(windows.starts)]) print("calculate.repeats.percentage.in.windows: sequence length is shorter than last window")
   if(sequence.length < max(repeat.starts)) print("calculate.repeats.percentage.in.windows: sequence length is shorter than last repeat start")
   
-  if(length(windows.starts) == 1) return(sum(repeat.lengths) / (sequence.length - windows.starts[1]))
-  
   bins.breaks = c(windows.starts, sequence.length)
   
-  repeat.lengths = repeat.lengths[repeat.starts > min(windows.starts)]
-  repeat.starts = repeat.starts[repeat.starts > min(windows.starts)]
-  
-  repeat.lengths = repeat.lengths[repeat.starts < sequence.length]
-  repeat.starts = repeat.starts[repeat.starts < sequence.length]
-  
+  all_coords <- unlist(mapply(function(start, length) start:(start + length - 1), repeat.starts, repeat.lengths))
+
+  all_coords <- all_coords[all_coords <= sequence.length & all_coords >= min(windows.starts)]
+
   if(unique_coords) {
-    all_coords <- unlist(mapply(function(start, length) start:(start + length - 1), repeat.starts, repeat.lengths))
+    if(length(windows.starts) == 1) return(length(unique(all_coords)) / (sequence.length - windows.starts[1]))
     hist.data = hist(unique(all_coords), breaks = bins.breaks, plot = F)
   } else {
-    hist.data = hist(rep(repeat.starts, repeat.lengths), breaks = bins.breaks, plot = F)
+    if(length(windows.starts) == 1) return(length(all_coords) / (sequence.length - windows.starts[1]))
+    hist.data = hist(all_coords, breaks = bins.breaks, plot = F, warn.unused = F)
   }
   
   return(100 * hist.data$counts / (bins.breaks[2:length(bins.breaks)] - bins.breaks[1:(length(bins.breaks) - 1)]))
