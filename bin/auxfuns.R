@@ -292,7 +292,7 @@ calculate.GC.in.windows.2 = function(windows.starts, sequence, bin.size = 0)
   return(100 * unlist(lapply(windows.starts, FUN = calc.GC.in.a.window.2, sequence, bin.size)))
 }
 
-calculate.repeats.percentage.in.windows = function(windows.starts, repeat.starts, repeat.lengths, sequence.length = 0, unique_coords = FALSE)
+calculate.repeats.percentage.in.windows = function(windows.starts, repeat.starts, repeat.lengths, sequence.length = 0, unique_coords = TRUE)
 {
   if(sequence.length < windows.starts[length(windows.starts)]) print("calculate.repeats.percentage.in.windows: sequence length is shorter than last window")
   if(sequence.length < max(repeat.starts)) print("calculate.repeats.percentage.in.windows: sequence length is shorter than last repeat start")

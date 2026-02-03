@@ -41,6 +41,11 @@ for(i in seq_len(nrow(metadata_data))) {
   metadata_data$chromosome.name[i] <- strsplit(metadata_data$chromosome.name[i], " ")[[1]][1]
 }
 
+if(nrow(genome_classes_data) == 0) {
+  write.csv(data.frame(), output_centromeric_scores, row.names = FALSE)
+  quit(status = 0)
+}
+
 
 # Load optionals if provided
 # print("load edta")

@@ -51,49 +51,53 @@ print(f"📄 Loaded {len(new_data)} rows from {input_csv}")
 
 # Check for empty data
 if len(new_data) == 0:
-    sys.exit(f"❌ Input CSV is empty: {input_csv}\n"
-             f"   Please check that SCORE_CENTROMERIC process produced valid output.")
+    print(f"⚠️  Input CSV is empty: {input_csv}\n"
+          f"   Creating empty output file with headers only.")
+    results = pd.DataFrame({
+        'prediction_centromeric': [],
+        'probability_centromeric': []
+    })
+else:
+    new_data = new_data.replace(-1, np.nan)
 
-new_data = new_data.replace(-1, np.nan)
+    # ───────────────────────────────────────────────
+    # Preprocess (match training pipeline)
+    # ───────────────────────────────────────────────
+    columns_to_drop = ['class', 'X', 'new_class_num_ID', 'chromosome', 'is_cen']
+    new_data = new_data.drop(columns=[c for c in columns_to_drop if c in new_data.columns])
 
-# ───────────────────────────────────────────────
-# Preprocess (match training pipeline)
-# ───────────────────────────────────────────────
-columns_to_drop = ['class', 'X', 'new_class_num_ID', 'chromosome', 'is_cen']
-new_data = new_data.drop(columns=[c for c in columns_to_drop if c in new_data.columns])
+    # Ensure all training columns are present
+    for col in numerical_cols:
+        if col not in new_data.columns:
+            new_data[col] = np.nan
 
-# Ensure all training columns are present
-for col in numerical_cols:
-    if col not in new_data.columns:
-        new_data[col] = np.nan
+    # Impute missing numeric values (fallback to 0 if all NaN)
+    for col in numerical_cols:
+        if new_data[col].isna().all():
+            new_data[col] = 0
+        else:
+            new_data[col] = new_data[col].fillna(new_data[col].median())
 
-# Impute missing numeric values (fallback to 0 if all NaN)
-for col in numerical_cols:
-    if new_data[col].isna().all():
-        new_data[col] = 0
-    else:
-        new_data[col] = new_data[col].fillna(new_data[col].median())
+    # Scale safely
+    new_data[numerical_cols] = scaler.transform(new_data[numerical_cols])
 
-# Scale safely
-new_data[numerical_cols] = scaler.transform(new_data[numerical_cols])
+    # Align and sanitize (ensure no NaNs remain)
+    new_data = new_data.reindex(columns=numerical_cols, fill_value=0)
+    new_data = new_data.replace([np.inf, -np.inf], 0).fillna(0)
 
-# Align and sanitize (ensure no NaNs remain)
-new_data = new_data.reindex(columns=numerical_cols, fill_value=0)
-new_data = new_data.replace([np.inf, -np.inf], 0).fillna(0)
+    # Feature selection
+    new_selected = selector.transform(new_data)
 
-# Feature selection
-new_selected = selector.transform(new_data)
+    # ───────────────────────────────────────────────
+    # Predict
+    # ───────────────────────────────────────────────
+    predictions = best_model.predict(new_selected)
+    probabilities = best_model.predict_proba(new_selected)[:, 1]
 
-# ───────────────────────────────────────────────
-# Predict
-# ───────────────────────────────────────────────
-predictions = best_model.predict(new_selected)
-probabilities = best_model.predict_proba(new_selected)[:, 1]
-
-results = pd.DataFrame({
-    'prediction_centromeric': predictions,
-    'probability_centromeric': probabilities
-})
+    results = pd.DataFrame({
+        'prediction_centromeric': predictions,
+        'probability_centromeric': probabilities
+    })
 
 # ───────────────────────────────────────────────
 # Save results
