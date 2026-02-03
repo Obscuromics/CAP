@@ -50,6 +50,10 @@ gc_data <- read.csv(gc_csv)
 ctw_data <- read.csv(ctw_csv)
 scores_data <- read.csv(scores_csv)
 
+# Ensure critical data is not empty
+if (nrow(metadata_data) == 0) stop("metadata_csv is empty")
+if (nrow(genome_classes_data) == 0) genome_classes_data <- data.frame(class = character(), importance = numeric())
+
 # Load optionals if provided
 print("load extra")
 if (!no_edta) {
@@ -83,6 +87,7 @@ repeats  <- repeats_data
 arrays   <- arrays_data
 classes  <- genome_classes_data
 chr_info <- metadata_data
+if (nrow(repeats) == 0) repeats <- data.frame(seqID = character(), start = numeric(), width = numeric(), new_class = character())
 if (nrow(classes)) classes$num_ID <- seq_len(nrow(classes))
 
 if (!no_heli) {
@@ -169,6 +174,7 @@ edta_classes_colours <-  c(
 chromosomes     <- chr_info$chromosome.name[chr_info$is.chr == 1]
 chromosomes_len <- chr_info$size[chr_info$is.chr == 1]
 
+if (length(chromosomes) == 0) stop("No chromosomes found in metadata")
 chromosomes_sets <- vector("list", (length(chromosomes)%/%20+1))
 chromosomes_len_sets <- vector("list", (length(chromosomes)%/%20+1))
 
@@ -181,7 +187,7 @@ for(j in seq_along(chromosomes)) {
 #  SCORES & CLASS FILTERING
 # ------------------------------------------------------------------ #
 # scores_file <- file.path(getwd(), paste0("genome_classes_", assembly_name, ".csv"))
-scores <- cbind(scores_data, predictions_data)
+scores <- if (nrow(scores_data) > 0 && nrow(predictions_data) > 0) cbind(scores_data, predictions_data) else data.frame()
 
 if (nrow(scores)) {
   # scores$ed_perc <- 100 * scores$centre_array_edit / scores$mean_length
@@ -321,10 +327,12 @@ for(k in seq_along(chromosomes_sets)) {
     chr <- chromosomes[j]
     len <- chromosomes_len[j]
     rep_chr <- subset(repeats, seqID == chr)
-    rep_chr<- rep_chr[rep_chr$start >= 1,]
-    rep_chr<- rep_chr[rep_chr$start <= len,]
-    edt_chr <- if (!no_edta) subset(edta, seqID == chr) else data.frame()
-    gen_chr <- if (!no_heli) subset(genes, seqID == chr) else data.frame()
+    if (nrow(rep_chr)) {
+      rep_chr <- rep_chr[rep_chr$start >= 1,]
+      rep_chr <- rep_chr[rep_chr$start <= len,]
+    }
+    edt_chr <- if (!no_edta && nrow(edta) > 0) subset(edta, seqID == chr) else data.frame()
+    gen_chr <- if (!no_heli && nrow(genes) > 0) subset(genes, seqID == chr) else data.frame()
     
     # Initialize density storage for this chromosome
     chr_density_data <- list(
