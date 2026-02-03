@@ -42,7 +42,21 @@ for(i in seq_len(nrow(metadata_data))) {
 }
 
 if(nrow(genome_classes_data) == 0) {
-  write.csv(data.frame(), output_centromeric_scores, row.names = FALSE)
+  empty_output <- data.frame(
+    class = character(), new_class_num_ID = numeric(), count = numeric(),
+    mean_length = numeric(), total_bp = numeric(), chromosome = character(),
+    total_bp_norm_chr = numeric(), total_bp_norm_rep = numeric(), 
+    start_sd_norm_chr = numeric(), start_norm_chr_0_50 = numeric(),
+    gaps_count = numeric(), gaps_with_TEs_fraction = numeric(),
+    centre_array_edit = numeric(), centre_array_width_sd = numeric(),
+    centre_chromosome_edit = numeric(), centre_chromosome_width_sd = numeric(),
+    array_sizes_sd_norm_mean_arr_size = numeric(), array_count = numeric(),
+    TE_prox_dist = numeric(), TE_prox_SD = numeric(), TE_lm_coef = numeric(),
+    TE_prox_score = numeric(), gene_prox_dist = numeric(), gene_prox_SD = numeric(),
+    gene_lm_coef = numeric(), gene_prox_score = numeric(),
+    pred_centrophilic_TE = character(), t_test_t_val = numeric(), t_test_p_val = numeric()
+  )
+  write.csv(empty_output, output_centromeric_scores, row.names = FALSE)
   quit(status = 0)
 }
 
