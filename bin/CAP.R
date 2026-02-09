@@ -23,7 +23,7 @@ tes_filtered_csv <- if (args[9] != "NO_FILE") args[9] else no_edta <- TRUE
 genes_filtered_csv <- if (args[10] != "NO_FILE") args[10] else no_heli <- TRUE
 scores_csv <- basename(args[11]) # scores per class per chromosome
 
-kmer_data_files <- list.files(path = "/home/pwlodzimierz/ToL/kmer_profiles", full.names = TRUE)
+# kmer_data_files <- list.files(path = "/home/pwlodzimierz/ToL/kmer_profiles", full.names = TRUE)
 
 
 # Load libraries
@@ -252,10 +252,10 @@ for(k in seq_along(chromosomes_sets)) {
   # get kmer data if available
   add_kmers <- FALSE
   kmers_data <- data.frame()
-  if(sum(grepl(assembly_name, kmer_data_files))) {
-    add_kmers <- TRUE
-    kmers_data <- read.table(file = kmer_data_files[grep(assembly_name, kmer_data_files)], header = T, sep = "")
-  }
+  #if(sum(grepl(assembly_name, kmer_data_files))) {
+  #  add_kmers <- TRUE
+  #  kmers_data <- read.table(file = kmer_data_files[grep(assembly_name, kmer_data_files)], header = T, sep = "")
+  #}
   
   # ------------------------------------------------------------------ #
   #  PLOT SETUP
@@ -679,3 +679,4 @@ suppressWarnings(write.table(chromosome_CAP_data, file = output_file, append = T
 # save the data
 saveRDS(plot_data, file = file.path(paste0(assembly_name, "_CAP_Rdata.rds")))
 # ------------------------------------------------------------------ #
+
