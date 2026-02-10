@@ -505,6 +505,9 @@ for(k in seq_along(chromosomes_sets)) {
       if(length(kmers_data_averaged_100kb) != 0) {
         color_func <- colorRamp(c("white", "yellow", "orange", "red"))
         rgb_vals <- color_func(kmers_data_averaged_100kb)
+        if(length(rgb_vals) == 0) next
+        # Replace NA values in rgb_vals with white (255, 255, 255)
+        rgb_vals[is.na(rgb_vals)] <- 255
         colors <- rgb(rgb_vals[,1], rgb_vals[,2], rgb_vals[,3], maxColorValue = 255, alpha = 150)
         for(window_plot in seq_along(win_edta)) {
           rect(xleft = win_edta[window_plot] - 50000, ybottom = 0, xright = win_edta[window_plot] + 50000, ytop = 100, col = colors[window_plot], border = NA)

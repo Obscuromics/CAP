@@ -77,6 +77,8 @@ for (j in seq_along(chromosomes)) {
     gene_cluster <- sequence_genes[gene_cluster_start[k] : gene_cluster_end[k], ]
     gene_CDS_total_size <- sum(gene_cluster$width[gene_cluster$type == "CDS"])
     gene_CDS_total_overlap <- sum(gene_cluster$overlapping_bp)
+    if(length(gene_CDS_total_size) == 0 || gene_CDS_total_size == 0) next
+    if(length(gene_CDS_total_overlap) == 0 || gene_CDS_total_overlap == 0) next
     if((gene_CDS_total_overlap / gene_CDS_total_size) > genes_overlap_max_perc) {
       genes_to_remove <- c(genes_to_remove, (gene_cluster_start[k] : gene_cluster_end[k]))
     }

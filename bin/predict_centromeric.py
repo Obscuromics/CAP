@@ -78,6 +78,9 @@ else:
         else:
             new_data[col] = new_data[col].fillna(new_data[col].median())
 
+    # Remove infinity values BEFORE scaling (scaler cannot handle inf)
+    new_data[numerical_cols] = new_data[numerical_cols].replace([np.inf, -np.inf], 0)
+
     # Scale safely
     new_data[numerical_cols] = scaler.transform(new_data[numerical_cols])
 
