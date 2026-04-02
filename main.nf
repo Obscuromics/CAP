@@ -9,7 +9,6 @@ params.templates = null
 params.te_gff = null
 params.gene_gff = null
 params.metadata = null
-params.cores = 1
 params.max_rep_size = 200
 params.outdir = "./results"
 params.TRASH2 = null   // <-- new: directory containing TRASH2 output files (full paths)
@@ -46,7 +45,6 @@ process CHECK_DEPS {
 process TRASH2 {
     publishDir "${params.outdir}", mode: 'copy'
     tag "TRASH2 on ${assembly.baseName}"
-    cpus params.cores
 
     input:
     tuple (path(assembly), val(templates))
